@@ -4,7 +4,7 @@
 
     <groupId>com.gu</groupId>
     <artifactId>management</artifactId>
-    <version>1.20</version>
+    <version>1.21-SNAPSHOT</version>
 
     <name>Guardian Management helpers</name>
 
