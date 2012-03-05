@@ -1,7 +1,6 @@
 package com.gu.management
 
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.servlet.http.HttpServletRequest
 
 /**
  * This trait should be used by anything that wants to read
@@ -60,8 +59,8 @@ class Switchboard(switches: Seq[Switchable]) extends HtmlManagementPage with Pos
   val title = "Switchboard"
   val path = "/management/switchboard"
 
-  def body(r: HttpServletRequest) = {
-    val switchToShow = Option(r.getParameter("switch"))
+  def body(r: HttpRequest) = {
+    val switchToShow = r getParameter "switch"
     def shouldShow(s: Switchable) = switchToShow.map(s.name ==).getOrElse(true)
 
     <form method="POST">
@@ -85,9 +84,9 @@ class Switchboard(switches: Seq[Switchable]) extends HtmlManagementPage with Pos
     else
       <xml:group><input type="submit" name={ s.name } value="ON"/><span style="color: DarkRed"> OFF </span></xml:group>
 
-  def post(r: HttpServletRequest) {
+  def post(r: HttpRequest) {
     for (switch <- switches) {
-      Option(r.getParameter(switch.name)) match {
+      r.getParameter(switch.name) match {
         case Some("ON") => switch.switchOn()
         case Some("OFF") => switch.switchOff()
         case Some(other) => error("Expected ON or OFF as value for " + switch.name + " parameter")

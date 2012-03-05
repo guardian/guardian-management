@@ -19,8 +19,8 @@ pages and easy to create new app-specific ones.
 Note for the Old Skool
 ======================
 
-The old management libraries, that were web-framework specific, can be found in
-the [3.x](https://github.com/guardian/guardian-management/tree/3.x) branch of this project.
+The old web-framework specific management libraries, can be found in the
+[3.x](https://github.com/guardian/guardian-management/tree/3.x) branch of this project.
 There is no intention to maintain these further.
 
 Going from CACTI to GANGLIA
@@ -90,11 +90,15 @@ See guardian google docs for "Web Applications Specifications"
 
 
 
-Getting Started
+Getting Started (Servlet API)
 ===============
 
 The management pages are web framework agnostic: they use their own mini
 framework, blatently inspired/ripped off from [lift](http://www.liftweb.net).
+To be web framework agnostic, you can't assume the Serlvet API or novel
+frameworks like Play will be excluded. In practice, the management library is
+web framework agnostic but you will need a small adapter library to adapt
+the request abstraction to the Servlet API or alternative.
 
 Add the dependency to your build
 -----------------------------------
@@ -102,12 +106,12 @@ Add the dependency to your build
 In sbt 0.7.x:
 
     val guardianGithubSnapshots = "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
-    val guManagement = "com.gu" %% "management" % "4.1-SNAPSHOT"
+    val guManagement = "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
 
 In your build.sbt for sbt 0.10:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
-    libraryDependencies += "com.gu" %% "management" % "4.1-SNAPSHOT"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
 
 As of 4.1-SNAPSHOT, scala 2.8.1 and 2.9.0-1 are supported.
 

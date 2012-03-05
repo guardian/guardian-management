@@ -3,7 +3,7 @@ package com.gu.management
 import javax.servlet._
 import http.{ HttpServletResponse, HttpServletRequest }
 
-abstract class AbstractHttpFilter extends Filter {
+trait AbstractHttpFilter extends Filter {
   def init(filterConfig: FilterConfig) {}
   def destroy() {}
 
@@ -17,6 +17,5 @@ abstract class AbstractHttpFilter extends Filter {
   }
 
   def doHttpFilter(servletRequest: HttpServletRequest, resp: HttpServletResponse, chain: FilterChain)
-
 }
 
