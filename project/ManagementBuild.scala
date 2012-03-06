@@ -6,7 +6,7 @@ object ManagementBuild extends Build {
     managementServletApi,
     managementLogback,
     managementMongo,
-    example
+    exampleServletApi
   )
 
   lazy val management = managementProject("management")
@@ -15,7 +15,8 @@ object ManagementBuild extends Build {
   lazy val managementLogback = managementProject("management-logback") dependsOn (management)
   lazy val managementMongo = managementProject("management-mongo") dependsOn  (management)
 
-  lazy val example = managementProject("example") dependsOn (management, managementServletApi, managementLogback)
+  lazy val exampleServletApi = managementProject("example-servlet-api") dependsOn (management, managementServletApi, managementLogback)
 
   def managementProject(name: String) = Project(name, file(name))
+
 }

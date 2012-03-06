@@ -5,9 +5,6 @@ libraryDependencies ++= Seq(
     "net.liftweb" %% "lift-testkit" % "2.4" % "test"
 )
 
-// needed for specs2
-resolvers += ScalaToolsSnapshots
-
 // disable publishing the main javadoc jar
 publishArtifact in (Compile, packageDoc) := false
 
