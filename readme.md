@@ -19,8 +19,8 @@ pages and easy to create new app-specific ones.
 Note for the Old Skool
 ======================
 
-The old management libraries, that were web-framework specific, can be found in
-the [3.x](https://github.com/guardian/guardian-management/tree/3.x) branch of this project.
+The old web-framework specific management libraries, can be found in the
+[3.x](https://github.com/guardian/guardian-management/tree/3.x) branch of this project.
 There is no intention to maintain these further.
 
 Going from CACTI to GANGLIA
@@ -90,11 +90,15 @@ See guardian google docs for "Web Applications Specifications"
 
 
 
-Getting Started
+Getting Started (Servlet API)
 ===============
 
 The management pages are web framework agnostic: they use their own mini
 framework, blatently inspired/ripped off from [lift](http://www.liftweb.net).
+To be web framework agnostic, you can't assume the Serlvet API or novel
+frameworks like Play will be excluded. In practice, the management library is
+web framework agnostic but you will need a small adapter library to adapt
+the request abstraction to the Servlet API or alternative.
 
 Add the dependency to your build
 -----------------------------------
@@ -102,12 +106,12 @@ Add the dependency to your build
 In sbt 0.7.x:
 
     val guardianGithubSnapshots = "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
-    val guManagement = "com.gu" %% "management" % "4.1-SNAPSHOT"
+    val guManagement = "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
 
 In your build.sbt for sbt 0.10:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
-    libraryDependencies += "com.gu" %% "management" % "4.1-SNAPSHOT"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
 
 As of 4.1-SNAPSHOT, scala 2.8.1 and 2.9.0-1 are supported.
 
@@ -158,22 +162,27 @@ things like timing metrics and switches have a java-friendly interface and are u
 Look at the example!
 -----------------------
 
-The [example project](https://github.com/guardian/guardian-management/tree/master/example) has
+The [example project](https://github.com/guardian/guardian-management/tree/master/example-servlet-api) has
 a filter set up and uses some switches and timing metrics from both scala and java.
 
     $ git clone git@github.com:guardian/guardian-management.git
     $ cd guardian-management
     $ ./sbt010
-    > project example
-    > jetty-run
+    > project example-servlet-api
+    > container:start
 
-It also has very simple custom management page, but the best thing to do if you want to write your
+Try the following URLs locally:
+
+ * http://localhost:8080/java-app
+ * http://localhost:8080/scala-app
+ * http://localhost:8080/management
+ * http://localhost:8080/management/switchboard
+
+Also, enable the `take-it-down` switch and retry `/scala-app` and `/java-app`.
+
+The application also has very simple custom management page, but the best thing to do if you want to write your
 own management pages is to look at how the pre-defined ones are implemented: a simple readonly page to look at is
 the
 [status page](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/StatusPage.scala),
 and a more complex page that supports POSTs is
 [the switchboard](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/switchables.scala).
-
-
-
-

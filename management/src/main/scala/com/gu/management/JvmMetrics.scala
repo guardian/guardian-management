@@ -1,7 +1,6 @@
 package com.gu.management
 
 import management.ManagementFactory
-
 import collection.JavaConversions._
 
 object JvmMetrics {
@@ -9,7 +8,6 @@ object JvmMetrics {
   lazy val all = List(numThreads, totalThreads) ::: gcRates
 
   lazy val numThreads = new Metric {
-
     val group = "jvm"
     val name = "num_threads"
 

@@ -1,7 +1,5 @@
 package com.gu.management
 
-import javax.servlet.http.HttpServletRequest
-
 /**
  * This is a simple placeholder for a properties page.
  * This does not include dependencies to com.gu.configuration but takes a string to be printed, any dependency
@@ -13,5 +11,5 @@ import javax.servlet.http.HttpServletRequest
  */
 class PropertiesPage(config: String) extends ManagementPage {
   val path = "/management/properties"
-  def get(r: HttpServletRequest) = PlainTextResponse(config)
+  def get(request: HttpRequest) = PlainTextResponse(config)
 }
