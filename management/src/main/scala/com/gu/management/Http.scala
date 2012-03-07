@@ -1,6 +1,8 @@
 package com.gu.management
 
 import scala.collection.mutable
+import scala.xml.Elem
+import net.liftweb.json._
 
 sealed abstract class Method
 case object GET extends Method
@@ -13,6 +15,13 @@ object Method {
     // Only GET and POST are supported for Management URLs
   }
 }
+
+sealed abstract class ResponseBody { def toText: String }
+case class TextResponseBody(text: String) extends ResponseBody { lazy val toText = text }
+case class HtmlResponseBody(html: Elem) extends ResponseBody { lazy val toText = html.toString() }
+case class XmlResponseBody(xml: Elem) extends ResponseBody { lazy val toText = xml.toString() }
+case class JsonResponseBody(json: JValue) extends ResponseBody { lazy val toText = pretty(render(json)) }
+case object NoResponseBody extends ResponseBody { lazy val toText = "" }
 
 /*
  * requestURI: the part of this request's URL from the protocol name up to the query string
@@ -34,7 +43,7 @@ trait HttpResponse {
   var contentType: String
 
   var status: Int
-  var body: String
+  var body: ResponseBody
 
   def send()
   def sendError(code: Int, message: String)
