@@ -1,7 +1,7 @@
 package com.gu.management
 
 import net.liftweb.json._
-import xml.Elem
+import scala.xml.Elem
 
 /**
  * Parent of all (immutable) response objects. Pattern drawn from Lift response wrappers.
@@ -13,7 +13,7 @@ trait Response {
 case class PlainTextResponse(text: String) extends Response {
   def sendTo(response: HttpResponse) {
     response.contentType = "text/plain"
-    response.body = text
+    response.body = TextResponseBody(text)
 
     response.send()
   }
@@ -22,7 +22,7 @@ case class PlainTextResponse(text: String) extends Response {
 case class HtmlResponse(html: Elem) extends Response {
   def sendTo(response: HttpResponse) {
     response.contentType = "application/xhtml+xml"
-    response.body = html.toString()
+    response.body = HtmlResponseBody(html)
 
     response.send()
   }
@@ -31,7 +31,7 @@ case class HtmlResponse(html: Elem) extends Response {
 case class XmlResponse(xml: Elem) extends Response {
   def sendTo(response: HttpResponse) {
     response.contentType = "application/xml"
-    response.body = xml.toString()
+    response.body = XmlResponseBody(xml)
 
     response.send()
   }
@@ -47,6 +47,7 @@ case class RedirectResponse(to: String) extends Response {
   def sendTo(response: HttpResponse) {
     response.status = 302
     response.headers += ("Location" -> to)
+    response.body = NoResponseBody
 
     response.send()
   }
@@ -55,7 +56,7 @@ case class RedirectResponse(to: String) extends Response {
 case class JsonResponse(json: JValue) extends Response {
   def sendTo(response: HttpResponse) {
     response.contentType = "application/json"
-    response.body = pretty(render(json))
+    response.body = JsonResponseBody(json)
 
     response.send()
   }

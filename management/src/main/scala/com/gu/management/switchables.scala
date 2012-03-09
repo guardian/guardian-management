@@ -8,11 +8,19 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 trait Switch {
   def isSwitchedOn: Boolean
-
-  def whenOn(block: => Unit) { if (isSwitchedOn) block }
-  def whenOff(block: => Unit) { if (!isSwitchedOn) block }
+  def isSwitchedOff: Boolean = !isSwitchedOn
 
   def opt[T](block: => T): Option[T] = if (isSwitchedOn) Some(block) else None
+}
+
+object Switch {
+  object On {
+    def unapply(switch: Switch): Boolean = switch.isSwitchedOn
+  }
+
+  object Off {
+    def unapply(switch: Switch): Boolean = switch.isSwitchedOff
+  }
 }
 
 /**

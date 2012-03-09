@@ -1,0 +1,44 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+
+    <!-- this filter declaration is needed by any app using these management pages -->
+    <filter>
+        <filter-name>managementFilter</filter-name>
+        <filter-class>com.gu.management.servlet.example.ScalaManagementFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>managementFilter</filter-name>
+        <url-pattern>/management/*</url-pattern>
+    </filter-mapping>
+
+    <!-- this servlet is our (example) java application -->
+
+    <servlet>
+        <servlet-name>JavaApp</servlet-name>
+        <servlet-class>com.gu.management.servlet.example.JavaApp</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>JavaApp</servlet-name>
+        <url-pattern>/java-app</url-pattern>
+    </servlet-mapping>
+
+
+    <!-- this servlet is our (example) scala application -->
+
+    <servlet>
+        <servlet-name>ScalaApp</servlet-name>
+        <servlet-class>com.gu.management.servlet.example.ScalaApp</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ScalaApp</servlet-name>
+        <url-pattern>/scala-app</url-pattern>
+    </servlet-mapping>
+
+</web-app>
+

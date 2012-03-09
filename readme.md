@@ -165,22 +165,27 @@ things like timing metrics and switches have a java-friendly interface and are u
 Look at the example!
 -----------------------
 
-The [example project](https://github.com/guardian/guardian-management/tree/master/example) has
+The [example project](https://github.com/guardian/guardian-management/tree/master/example-servlet-api) has
 a filter set up and uses some switches and timing metrics from both scala and java.
 
     $ git clone git@github.com:guardian/guardian-management.git
     $ cd guardian-management
     $ ./sbt010
-    > project example
-    > jetty-run
+    > project example-servlet-api
+    > container:start
 
-It also has very simple custom management page, but the best thing to do if you want to write your
+Try the following URLs locally:
+
+ * http://localhost:8080/java-app
+ * http://localhost:8080/scala-app
+ * http://localhost:8080/management
+ * http://localhost:8080/management/switchboard
+
+Also, enable the `take-it-down` switch and retry `/scala-app` and `/java-app`.
+
+The application also has very simple custom management page, but the best thing to do if you want to write your
 own management pages is to look at how the pre-defined ones are implemented: a simple readonly page to look at is
 the
 [status page](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/StatusPage.scala),
 and a more complex page that supports POSTs is
 [the switchboard](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/switchables.scala).
-
-
-
-

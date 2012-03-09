@@ -1,4 +1,4 @@
-package com.gu.management.request
+package com.gu.management
 
 import org.specs2.mutable.Specification
 
