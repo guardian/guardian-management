@@ -2,12 +2,11 @@ package com.gu.management.example
 
 import com.gu.management._
 import logback._
-import javax.servlet.http._
 
 // example of creating your own new page type
 class DummyPage extends ManagementPage {
   val path = "/management/dummy"
-  def get(req: HttpServletRequest) = PlainTextResponse("Hello dummy!")
+  def get(req: HttpRequest) = PlainTextResponse("Hello dummy!")
 }
 
 // switches

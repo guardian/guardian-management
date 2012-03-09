@@ -1,11 +1,10 @@
 package com.gu.management.logback
 
-import com.gu.management.{ Postable, HtmlManagementPage }
-import javax.servlet.http.HttpServletRequest
-import collection.JavaConverters._
-import org.slf4j.LoggerFactory
+import com.gu.management.{ HttpRequest, Postable, HtmlManagementPage }
 import ch.qos.logback.classic.{ Logger, Level, LoggerContext }
-import xml.{ NodeSeq, Text }
+import org.slf4j.LoggerFactory
+import scala.collection.JavaConverters._
+import scala.xml.Text
 
 class LogbackLevelPage extends HtmlManagementPage with Postable {
   val myLogger = LoggerFactory.getLogger(getClass)
@@ -20,7 +19,7 @@ class LogbackLevelPage extends HtmlManagementPage with Postable {
   // the above is a list because I care about order in dropdowns
   private val levelMap = levels.toMap
 
-  def body(r: HttpServletRequest) = LoggerFactory.getILoggerFactory match {
+  def body(r: HttpRequest) = LoggerFactory.getILoggerFactory match {
     case logback: LoggerContext =>
       <form method="POST">
         <input type="submit" value="update"/>
@@ -58,13 +57,13 @@ class LogbackLevelPage extends HtmlManagementPage with Postable {
 
   def title = "Logback Configuration"
 
-  def post(r: HttpServletRequest) = {
+  def post(r: HttpRequest) {
     myLogger.info("Processing POST...")
 
     val logback = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
     for {
       logger <- logback.getLoggerList.asScala
-      param <- Option(r.getParameter(logger.getName))
+      param <- r.getParameter(logger.getName)
       level <- levelMap.get(param)
     } {
       myLogger.info("updating %s -> %s" format (logger.getName, level))

@@ -1,11 +1,9 @@
 package com.gu.management
 
-import javax.servlet.http.HttpServletRequest
-
 class HealthcheckManagementPage(healthcheckSwitch: Switch = Healthcheck.switch) extends ManagementPage {
   val path = "/management/healthcheck"
 
-  def get(req: HttpServletRequest) = {
+  def get(req: HttpRequest) = {
     healthcheckSwitch opt {
       PlainTextResponse("OK")
     } getOrElse {

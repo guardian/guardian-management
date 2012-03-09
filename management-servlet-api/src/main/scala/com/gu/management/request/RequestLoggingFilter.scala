@@ -1,12 +1,10 @@
 package com.gu.management.request
 
+import com.gu.management._
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import collection.JavaConverters._
-import java.net.URLEncoder
-import org.slf4j.LoggerFactory
-import com.gu.management._
+import scala.collection.JavaConverters._
 
 /*
  * If you want to change the behaviour of this class, derive a version
@@ -19,25 +17,21 @@ class RequestLoggingFilter(
     pathPrefixesToLogAtTrace: Set[String] = Set("/management"),
     maximumSizeForPostParameters: Int = 32,
     logRequestBodySwitch: Switch = LogRequestBodySwitch,
-    maxRequstBodyLength: Int = 1024) extends AbstractHttpFilter {
-
-  protected lazy val logger = LoggerFactory.getLogger(getClass)
+    maxRequstBodyLength: Int = 1024) extends AbstractHttpFilter with Loggable {
 
   protected lazy val restrictedParamsRegexp = parametersToSuppressInLogs.mkString("(?:", ")|(?:", ")").r
 
   // Default constructor for use in web.xml as opposed to dependency injection frameworks
   def this() = this(HttpRequestsTimingMetric, false, Set.empty, Set("/management"), 32)
 
-  class Request(r: HttpServletRequest) {
-    lazy val servletPath = Option(r.getServletPath) getOrElse ""
-    lazy val pathInfo = Option(r.getPathInfo) getOrElse ""
+  class Request(request: HttpServletRequest) {
+    lazy val servletPath = Option(request.getServletPath) getOrElse ""
+    lazy val pathInfo = Option(request.getPathInfo) getOrElse ""
     lazy val fullPath = servletPath + pathInfo
 
-    lazy val method = r.getMethod
+    lazy val method = request.getMethod
 
-    lazy val paramNames = r.getParameterNames.asScala.map(_.toString).toList
-
-    lazy val params = paramNames map { name => name -> Option(r.getParameter(name)).getOrElse("") }
+    lazy val params = request.parameters mapValues { _.headOption map { _.toString } getOrElse "" }
 
     lazy val loggableParams = {
       if (shouldLogParametersOnNonGetRequests || method == "GET") {
@@ -49,7 +43,7 @@ class RequestLoggingFilter(
 
     lazy val loggableParamString = loggableParams match {
       case Nil => ""
-      case l => l.map { case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") } mkString ("?", "&", "")
+      case l => l.map { case (k, v) => k + "=" + v.urlencode("UTF-8") } mkString ("?", "&", "")
     }
 
     def filterParamForLogging(p: (String, String)) = p match {
@@ -63,9 +57,9 @@ class RequestLoggingFilter(
 
     lazy val requestBody = {
       try {
-        (r match {
+        (request match {
           case request: BodyCachingRequestWrapper =>
-            val bodyAsString = new String(request.cachedBody, request.characterEncoding)
+            val bodyAsString = new String(request.body, request.encoding)
             if (restrictedParamsRegexp.findFirstIn(bodyAsString).isDefined) "<<restricted>>" else bodyAsString
           case _ => "<<wont display>>"
         }).take(maxRequstBodyLength)
@@ -87,8 +81,9 @@ class RequestLoggingFilter(
 
     val activity = req.method + " " + req.fullPath + req.loggableParamString + (if (logPostData) " " + req.requestBody else "")
 
-    if (req.shouldLog)
+    if (req.shouldLog) {
       logger.trace(activity)
+    }
 
     val stopWatch = new StopWatch
     try {

@@ -1,5 +1,12 @@
 package com.gu.management
 
+import java.util.Date
+
+case class StatusResponseJson(
+  application: String,
+  time: Long = new Date().getTime,
+  metrics: Seq[StatusMetric] = Nil)
+
 object StatusPage {
   def apply(application: String, metrics: Seq[Metric]) = new StatusPage(application, () => metrics)
 

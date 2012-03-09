@@ -2,23 +2,41 @@ package com.gu.management
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.Callable
-import java.util.Date
-
-abstract class Metric() {
-  val group: String
-  val name: String
-  def asJson: StatusMetric
-  def definition: Definition = Definition(group, name)
-
-}
-
-object TimingMetric {
-  val empty = new TimingMetric("application", "Empty", "Empty", "Empty")
-}
 
 case class Definition(group: String, name: String)
 
-case class GaugeMetric(group: String, name: String, title: String, description: String, master: Option[Metric] = None) extends Metric {
+case class StatusMetric(
+  group: String = "application",
+  master: Option[Definition] = None,
+  // name should be brief and underscored not camel case
+  name: String,
+  `type`: String,
+  // a short (<40 chars) title for this metric
+  title: String,
+  // an as-long-as-you-like description of what this metric means
+  // (used, e.g. on mouse over)
+  description: String,
+  // NB: these are deliberately strings - some json parsers have issues
+  // with big numbers, see https://dev.twitter.com/docs/twitter-ids-json-and-snowflake
+  value: Option[String] = None,
+  count: Option[String] = None,
+  totalTime: Option[String] = None,
+  units: Option[String] = None)
+
+trait Metric {
+  val group: String
+  val name: String
+  def asJson: StatusMetric
+
+  lazy val definition: Definition = Definition(group, name)
+}
+
+case class GaugeMetric(
+    group: String,
+    name: String,
+    title: String,
+    description: String,
+    master: Option[Metric] = None) extends Metric {
   private val _count = new AtomicLong()
 
   def recordCount(count: Int) {
@@ -38,7 +56,12 @@ case class GaugeMetric(group: String, name: String, title: String, description: 
   )
 }
 
-case class CountMetric(group: String, name: String, title: String, description: String, master: Option[Metric] = None) extends Metric {
+case class CountMetric(
+    group: String,
+    name: String,
+    title: String,
+    description: String,
+    master: Option[Metric] = None) extends Metric {
   private val _count = new AtomicLong()
 
   def recordCount(count: Int) {
@@ -58,7 +81,12 @@ case class CountMetric(group: String, name: String, title: String, description: 
   )
 }
 
-case class TimingMetric(group: String, name: String, title: String, description: String, master: Option[Metric] = None) extends Metric {
+case class TimingMetric(
+    group: String,
+    name: String,
+    title: String,
+    description: String,
+    master: Option[Metric] = None) extends Metric {
 
   private val _totalTimeInMillis = new AtomicLong()
   private val _count = new AtomicLong()
@@ -108,26 +136,7 @@ case class TimingMetric(group: String, name: String, title: String, description:
   }
 }
 
-case class StatusMetric(
-  group: String = "application",
-  master: Option[Definition] = None,
-  // name should be brief and underscored not camel case
-  name: String,
-  `type`: String,
-  // a short (<40 chars) title for this metric
-  title: String,
-  // an as-long-as-you-like description of what this metric means
-  // (used, e.g. on mouse over)
-  description: String,
-  // NB: these are deliberately strings - some json parsers have issues
-  // with big numbers, see https://dev.twitter.com/docs/twitter-ids-json-and-snowflake
-  value: Option[String] = None,
-  count: Option[String] = None,
-  totalTime: Option[String] = None,
-  units: Option[String] = None)
-
-case class StatusResponseJson(
-  application: String,
-  time: Long = new Date().getTime,
-  metrics: Seq[StatusMetric] = Nil)
+object TimingMetric {
+  val empty = new TimingMetric("application", "Empty", "Empty", "Empty")
+}
 
