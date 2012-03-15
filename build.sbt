@@ -1,6 +1,6 @@
 import java.util.jar._
 
-crossScalaVersions in ThisBuild := Seq("2.8.1", "2.9.0-1", "2.9.1")
+crossScalaVersions in ThisBuild := Seq("2.9.1")
 
 // doing "in ThisBuild" makes this default setting for all projects in this build
 version in ThisBuild := "5.7-SNAPSHOT"

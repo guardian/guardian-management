@@ -13,3 +13,5 @@ project/boot/
 .idea/
 out/
 
+# stuff to ignore from play
+example-play/logs

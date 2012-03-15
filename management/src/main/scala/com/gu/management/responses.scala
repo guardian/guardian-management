@@ -8,6 +8,7 @@ import scala.xml.Elem
  */
 trait Response {
   def sendTo(resp: HttpResponse)
+  def to(resp: HttpResponse) { sendTo(resp) }
 }
 
 case class PlainTextResponse(text: String) extends Response {

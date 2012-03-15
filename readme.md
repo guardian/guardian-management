@@ -106,17 +106,13 @@ the HTTP interface in use in your desired web framework.
 Add the dependency to your build
 -----------------------------------
 
-In sbt 0.7.x:
-
-    val guardianGithubSnapshots = "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
-    val guManagement = "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
-
-In your build.sbt for sbt 0.10:
+In your build.sbt:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
     libraryDependencies += "com.gu" %% "management-servlet-api" % "5.7-SNAPSHOT"
 
-As of 4.1-SNAPSHOT, scala 2.8.1 and 2.9.0-1 are supported.
+As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
+to Scala 2.9.1.
 
 Add the management filter to your web.xml
 --------------------------------------------
@@ -189,3 +185,72 @@ the
 [status page](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/StatusPage.scala),
 and a more complex page that supports POSTs is
 [the switchboard](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/switchables.scala).
+
+
+
+
+Getting Started (Play Framework)
+===============
+
+Add the dependency to your build
+-----------------------------------
+
+In your build.sbt for sbt 0.10:
+
+    resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
+    libraryDependencies += "com.gu" %% "management-play" % "5.7-SNAPSHOT"
+
+As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
+to Scala 2.9.1.
+
+Add the management controller to your routes
+--------------------------------------------
+
+Hook in the management URLs to your Play `conf/routes` file using the following:
+
+    GET     /management$path<.*>        controllers.Management.apply(path)
+    POST    /management$path<.*>        controllers.Management.apply(path)
+
+Implement the management controller
+-----------------------------------
+
+In `app/controllers/Management.scala` add the controller definition with the desired management
+pages:
+
+    object Management extends ManagementController {
+
+      lazy val pages =
+        new DummyPage() ::
+        new ManifestPage() ::
+        new Switchboard(Switches.all) ::
+        new StatusPage(TimingMetrics.all) ::
+        Nil
+    }
+
+Look at the example!
+-----------------------
+
+The [example project](https://github.com/guardian/guardian-management/tree/master/example-play) has
+management routes set up and uses some switches and timing metrics.
+
+    $ git clone git@github.com:guardian/guardian-management.git
+    $ cd guardian-management
+    $ ./sbt010
+    > project example-play
+    > run
+
+Try the following URLs locally:
+
+ * http://localhost:9000/scala-app
+ * http://localhost:9000/management
+ * http://localhost:9000/management/switchboard
+
+Also, enable the `take-it-down` switch and retry `/scala-app`.
+
+The application also has very simple custom management page, but the best thing to do if you want to write your
+own management pages is to look at how the pre-defined ones are implemented: a simple readonly page to look at is
+the
+[status page](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/StatusPage.scala),
+and a more complex page that supports POSTs is
+[the switchboard](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/switchables.scala).
+
