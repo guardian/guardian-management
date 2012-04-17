@@ -10,17 +10,17 @@ class StopWatch {
 
 object Timing {
 
-  def debug[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric.empty)(block: => T): T =
+  def debug[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric._noOp)(block: => T): T =
     time(activity, logger.debug, logger.debug, metric)(block)
 
-  def info[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric.empty)(block: => T): T =
+  def info[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric._noOp)(block: => T): T =
     time(activity, logger.info, logger.info, metric)(block)
 
   def time[T](
     activity: String,
     onSuccess: (String) => Unit,
     onFailure: (String, Throwable) => Unit,
-    metric: TimingMetric = TimingMetric.empty)(block: => T): T = {
+    metric: TimingMetric = TimingMetric._noOp)(block: => T): T = {
     val stopWatch = new StopWatch
     try {
       val result = block

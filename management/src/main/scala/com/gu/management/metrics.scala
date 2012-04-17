@@ -136,7 +136,23 @@ case class TimingMetric(
   }
 }
 
-object TimingMetric {
-  val empty = new TimingMetric("application", "Empty", "Empty", "Empty")
+class NoOpTimingMetric(group: String, name: String, title: String, description: String, master: Option[Metric] = None)
+    extends TimingMetric(group, name, title, description, master) {
+
+  def this() = this("", "", "", "")
+
+  @inline override def recordTimeSpent(timeSpentInMillis: Long) {}
+  @inline override def count = 0l
+  @inline override def totalTimeInMillis = 0l
+  @inline override def measure[T](block: => T) = block
+  @inline override def call[T](c: Callable[T]) = c.call
+  @inline override def run(r: Runnable) { r.run() }
 }
 
+object TimingMetric {
+
+  private[management] val _noOp = new NoOpTimingMetric
+
+  def empty = new TimingMetric("application", "Empty", "Empty", "Empty")
+
+}
