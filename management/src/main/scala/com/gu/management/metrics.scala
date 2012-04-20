@@ -24,16 +24,16 @@ case class StatusMetric(
   units: Option[String] = None)
 
 trait Metric {
-  val group: String
-  val name: String
+  def group: String
+  def name: String
   def asJson: StatusMetric
 
   lazy val definition: Definition = Definition(group, name)
 }
 
-case class GaugeMetric(
-    group: String,
-    name: String,
+class GaugeMetric(
+    val group: String,
+    val name: String,
     title: String,
     description: String,
     master: Option[Metric] = None) extends Metric {
@@ -56,9 +56,9 @@ case class GaugeMetric(
   )
 }
 
-case class CountMetric(
-    group: String,
-    name: String,
+class CountMetric(
+    val group: String,
+    val name: String,
     title: String,
     description: String,
     master: Option[Metric] = None) extends Metric {
@@ -81,9 +81,19 @@ case class CountMetric(
   )
 }
 
-case class TimingMetric(
-    group: String,
-    name: String,
+object CountMetric {
+
+  def apply(group: String, name: String, title: String, description: String): CountMetric =
+    new CountMetric(group, name, title, description, None)
+
+  def apply(group: String, name: String, title: String, description: String, master: Metric): CountMetric =
+    new CountMetric(group, name, title, description, Some(master))
+
+}
+
+class TimingMetric(
+    val group: String,
+    val name: String,
     title: String,
     description: String,
     master: Option[Metric] = None) extends Metric {
@@ -127,31 +137,17 @@ case class TimingMetric(
   }
 
   // for java developers, these are easier to call
-  def call[T](c: Callable[T]) = measure {
-    c.call
-  }
-
-  def run(r: Runnable) = measure {
-    r.run()
-  }
-}
-
-class NoOpTimingMetric(group: String, name: String, title: String, description: String, master: Option[Metric] = None)
-    extends TimingMetric(group, name, title, description, master) {
-
-  def this() = this("", "", "", "")
-
-  @inline override def recordTimeSpent(timeSpentInMillis: Long) {}
-  @inline override def count = 0l
-  @inline override def totalTimeInMillis = 0l
-  @inline override def measure[T](block: => T) = block
-  @inline override def call[T](c: Callable[T]) = c.call
-  @inline override def run(r: Runnable) { r.run() }
+  def call[T](c: Callable[T]) = measure { c.call }
+  def run(r: Runnable) { measure { r.run() } }
 }
 
 object TimingMetric {
 
-  private[management] val _noOp = new NoOpTimingMetric
+  def apply(group: String, name: String, title: String, description: String): TimingMetric =
+    new TimingMetric(group, name, title, description, None)
+
+  def apply(group: String, name: String, title: String, description: String, master: Metric): TimingMetric =
+    new TimingMetric(group, name, title, description, Some(master))
 
   def empty = new TimingMetric("application", "Empty", "Empty", "Empty")
 

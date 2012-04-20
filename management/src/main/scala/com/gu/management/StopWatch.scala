@@ -10,21 +10,26 @@ class StopWatch {
 
 object Timing {
 
-  def debug[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric._noOp)(block: => T): T =
-    time(activity, logger.debug, logger.debug, metric)(block)
+  def debug[T](logger: Logger, activity: String): (=> T) => T =
+    time(activity, logger.debug, logger.debug, None)
 
-  def info[T](logger: Logger, activity: String, metric: TimingMetric = TimingMetric._noOp)(block: => T): T =
-    time(activity, logger.info, logger.info, metric)(block)
+  def debug[T](logger: Logger, activity: String, metric: TimingMetric): (=> T) => T =
+    time(activity, logger.debug, logger.debug, Some(metric))
 
-  def time[T](
-    activity: String,
-    onSuccess: (String) => Unit,
+  def info[T](logger: Logger, activity: String): (=> T) => T =
+    time(activity, logger.info, logger.info, None)
+
+  def info[T](logger: Logger, activity: String, metric: TimingMetric): (=> T) => T =
+    time(activity, logger.info, logger.info, Some(metric))
+
+  def time[T](activity: String,
+    onSuccess: String => Unit,
     onFailure: (String, Throwable) => Unit,
-    metric: TimingMetric = TimingMetric._noOp)(block: => T): T = {
+    metric: Option[TimingMetric])(block: => T): T = {
     val stopWatch = new StopWatch
     try {
       val result = block
-      metric recordTimeSpent stopWatch.elapsed
+      metric foreach (_.recordTimeSpent(stopWatch.elapsed))
       onSuccess(activity + " completed in " + stopWatch.elapsed + " ms")
       result
     } catch {
