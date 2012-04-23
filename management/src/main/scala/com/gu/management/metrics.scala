@@ -3,9 +3,9 @@ package com.gu.management
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.Callable
 
-case class Definition(group: String, name: String)
+private[management] case class Definition(group: String, name: String)
 
-case class StatusMetric(
+private[management] case class StatusMetric(
   group: String = "application",
   master: Option[Definition] = None,
   // name should be brief and underscored not camel case
@@ -31,29 +31,49 @@ trait Metric {
   lazy val definition: Definition = Definition(group, name)
 }
 
-class GaugeMetric(
+abstract class InstantaneousMetric[A](
+    `type`: String,
     val group: String,
     val name: String,
     title: String,
     description: String,
+    getValue: () => A,
     master: Option[Metric] = None) extends Metric {
-  private val _count = new AtomicLong()
-
-  def recordCount(count: Int) {
-    _count.addAndGet(count)
-  }
-
-  def count = _count.get
 
   def asJson = StatusMetric(
     group = group,
     master = master map { _.definition },
     name = name,
-    `type` = "gauge",
+    `type` = `type`,
     title = title,
     description = description,
-    value = Some(count.toString)
+    value = Some(getValue().toString)
   )
+}
+
+class GaugeMetric(group: String, name: String, title: String, description: String, getCount: () => Long,
+  master: Option[Metric] = None)
+    extends InstantaneousMetric[Long]("gauge", group, name, title, description, getCount, master) {
+
+  def count: Long = getCount()
+}
+
+object GaugeMetric {
+
+  def apply(group: String, name: String, title: String, description: String, getCount: () => Long): GaugeMetric =
+    new GaugeMetric(group, name, title, description, getCount, None)
+
+  def apply(group: String, name: String, title: String, description: String, getCount: () => Long, master: Metric): GaugeMetric =
+    new GaugeMetric(group, name, title, description, getCount, Some(master))
+
+}
+
+class TextMetric(group: String, name: String, title: String, description: String, getValue: () => String,
+  master: Option[Metric] = None)
+    extends InstantaneousMetric[String]("text", group, name, title, description, getValue, master) {
+
+  def value: String = getValue()
+
 }
 
 class CountMetric(
