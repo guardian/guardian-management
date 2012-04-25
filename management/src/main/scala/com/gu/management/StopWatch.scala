@@ -45,9 +45,21 @@ object Timing {
   def info[T](logger: Logger, activity: String, metric: TimingMetric, callable: Callable[T]): T =
     info(logger, activity, metric)(callable.call())
 
-  def debug(logger: Logger, activity: String, metric: TimingMetric, callable: Runnable): Unit =
-    debug(logger, activity, metric)(callable.run())
+  def debug(logger: Logger, activity: String, metric: TimingMetric, runnable: Runnable): Unit =
+    debug(logger, activity, metric)(runnable.run())
 
-  def info(logger: Logger, activity: String, metric: TimingMetric, callable: Runnable): Unit =
-    info(logger, activity, metric)(callable.run())
+  def info(logger: Logger, activity: String, metric: TimingMetric, runnable: Runnable): Unit =
+    info(logger, activity, metric)(runnable.run())
+
+  def debug[T](logger: Logger, activity: String, callable: Callable[T]): T =
+    debug(logger, activity)(callable.call())
+
+  def info[T](logger: Logger, activity: String, callable: Callable[T]): T =
+    info(logger, activity)(callable.call())
+
+  def debug(logger: Logger, activity: String, runnable: Runnable): Unit =
+    debug(logger, activity)(runnable.run())
+
+  def info(logger: Logger, activity: String, runnable: Runnable): Unit =
+    info(logger, activity)(runnable.run())
 }
