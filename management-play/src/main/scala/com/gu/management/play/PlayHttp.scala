@@ -18,16 +18,15 @@ object PlayHttpRequest {
 case class PlayHttpResponse(results: Results) extends HttpResponse {
   var contentType: String = "text/html"
   var status: Int = 200
-  var body: ResponseBody = _
   var result: Result = _
 
   def send() {
     var simpleResult = body match {
-      case TextResponseBody(text) => results.Status(status)(text)
-      case HtmlResponseBody(html) => results.Status(status)(html)
-      case XmlResponseBody(xml) => results.Status(status)(xml)
-      case JsonResponseBody(json) => results.Status(status)(Json.parse(compact(render(json))))
-      case NoResponseBody => results.Status(status)
+      case Some(TextResponseBody(text)) => results.Status(status)(text)
+      case Some(HtmlResponseBody(html)) => results.Status(status)(html)
+      case Some(XmlResponseBody(xml)) => results.Status(status)(xml)
+      case Some(JsonResponseBody(json)) => results.Status(status)(Json.parse(compact(render(json))))
+      case None => results.Status(status)
     }
 
     headers foreach { header =>
@@ -40,7 +39,7 @@ case class PlayHttpResponse(results: Results) extends HttpResponse {
   def sendError(code: Int, message: String) {
     status = code
     contentType = "text/html"
-    body = HtmlResponseBody(
+    body = Some(HtmlResponseBody(
       <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
           <title>Error { code } { message }</title>
@@ -53,7 +52,7 @@ case class PlayHttpResponse(results: Results) extends HttpResponse {
           <br/>
         </body>
       </html>
-    )
+    ))
     send()
   }
 }
