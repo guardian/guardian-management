@@ -1,48 +1,46 @@
 package com.gu.management.internal
 
-import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
+import com.sun.net.httpserver.{ HttpExchange, HttpHandler, HttpServer }
 import com.gu.management._
-import java.net.{BindException, InetSocketAddress}
+import java.net.{ BindException, InetSocketAddress }
 import java.io.File
 import sbt._
 
 object ManagementServer extends Loggable with PortFileHandling {
   val managementPort = 18080
   val managementLimit = 18099
+  val permittedPorts = managementPort to managementLimit
   var server: Option[HttpServer] = None
 
   def start(handler: ManagementHandler, appName: String) {
-    if (server.isEmpty) {
-      server = startServer(managementPort, handler)
-      server.foreach { realServer =>
-        createPortFile(appName,realServer.getAddress.getPort)
-      }
-    }
+    startServer(managementPort, handler, appName)
   }
 
-  private def startServer(port:Int, handler:ManagementHandler):Option[HttpServer] = {
-    if ( managementPort to managementLimit contains port ) {
-      synchronized {
+  private def startServer(port: Int, handler: ManagementHandler, appName: String) {
+    synchronized {
+      if (server.isEmpty && (port in permittedPorts)) {
         try {
-          val server = HttpServer.create(new InetSocketAddress(port), 10)
-          server.createContext("/", handler)
-          server.setExecutor(null)
-          server.start()
-          Some(server)
+          val newServer = HttpServer.create(new InetSocketAddress(port), 10)
+          newServer.createContext("/", handler)
+          newServer.setExecutor(null)
+          newServer.start()
+          createPortFile(appName, newServer.getAddress.getPort)
+          server = Some(newServer)
         } catch {
-          case e:BindException => {
-            startServer(port + 1, handler)
+          case e: BindException => {
+            logger.info("Port %d in use. Retrying with next port." format port)
+            startServer(port + 1, handler, appName)
           }
         }
+      } else {
+        logger.warn("Cannot listen on any of the permitted ports. Management server not started.")
       }
-    } else {
-      None
     }
   }
 
   def shutdown() {
-    synchronized{
-      server.foreach{ _.stop(0) }
+    synchronized {
+      server.foreach { _.stop(0) }
       server = None
       deletePortFile()
     }
@@ -50,22 +48,22 @@ object ManagementServer extends Loggable with PortFileHandling {
 }
 
 trait PortFileHandling extends Loggable {
-  val portFileRoot="/var/run/ports/"
+  val portFileRoot = "/var/run/ports/"
   private var portFile: Option[File] = None
   def createPortFile(appName: String, port: Int): Boolean = {
     val file = new File(portFileRoot + appName + ".port")
     try {
-      IO.write(file, port.toString, append=false)
+      IO.write(file, port.toString, append = false)
       portFile = Some(file)
       true
     } catch {
       case _ =>
-        logger.warn("Could not create management port file at "+file)
+        logger.warn("Could not create management port file at " + file)
         false
     }
   }
   def deletePortFile() {
-    portFile.foreach( IO.delete(_) )
+    portFile.foreach(IO.delete(_))
     portFile = None
   }
 }
@@ -75,31 +73,31 @@ trait ManagementHandler extends HttpHandler with Loggable {
 
   def handle(httpExchange: HttpExchange) {
     try {
-      logger.debug("Entered handler for "+httpExchange.getRequestURI.toString)
+      logger.debug("Entered handler for " + httpExchange.getRequestURI.toString)
       val httpRequest = SunHttpRequest(httpExchange)
       val httpResponse = SunHttpResponse(httpExchange)
-      logger.debug("Handling request for "+httpRequest)
+      logger.debug("Handling request for " + httpRequest)
 
       val response = httpRequest match {
-        case request if request.path == "/" => {
+        case request if request.path == "/" =>
           RedirectResponse(request.requestURI + "management")
-        }
-        case request if request.requestURI.endsWith("/") => {
-          RedirectResponse(request.requestURI.replaceAll("/$",""))
-        }
-        case request => {
+
+        case request if request.requestURI.endsWith("/") =>
+          RedirectResponse(request.requestURI.replaceAll("/$", ""))
+
+        case request =>
           val page = pagesWithIndex find { _ canDispatch request }
-          logger.debug("Serving page: "+page.getOrElse("none"))
+          logger.debug("Serving page: " + page.getOrElse("none"))
           page map { _ dispatch httpRequest } getOrElse {
             ErrorResponse(404, "No management page for: " + request.path)
           }
-        }
+
       }
 
       response to httpResponse
     } catch {
       case e => {
-        logger.error("Caught an exception whilst handling internal management page request",e)
+        logger.error("Caught an exception whilst handling internal management page request", e)
       }
     }
   }

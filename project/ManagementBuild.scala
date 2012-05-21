@@ -1,3 +1,4 @@
+import com.typesafe.sbtscalariform.ScalariformPlugin
 import sbt._
 import PlayProject._
 import sbt.PlayProject._
@@ -36,5 +37,5 @@ object ManagementBuild extends Build {
     path = file("example-play"),
     mainLang = SCALA) dependsOn (management, managementPlay, managementLogback)
 
-  def managementProject(name: String) = Project(name, file(name))
+  def managementProject(name: String) = Project(name, file(name)).settings(ScalariformPlugin.scalariformSettings :_*)
 }
