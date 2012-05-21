@@ -63,7 +63,7 @@ case class DefaultSwitch(name: String, description: String, initiallyOn: Boolean
   }
 }
 
-class Switchboard(switches: Seq[Switchable]) extends HtmlManagementPage with Postable {
+class Switchboard(switches: Seq[Switchable], val applicationName: String) extends HtmlManagementPage with Postable {
   val title = "Switchboard"
   val path = "/management/switchboard"
 

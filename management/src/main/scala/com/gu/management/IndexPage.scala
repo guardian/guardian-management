@@ -1,6 +1,6 @@
 package com.gu.management
 
-case class IndexPage(pages: Seq[ManagementPage], version: String) extends HtmlManagementPage {
+case class IndexPage(pages: Seq[ManagementPage], applicationName: String, version: String) extends HtmlManagementPage {
   val path = "/management"
   val title = "Management Index"
 

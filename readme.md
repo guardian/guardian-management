@@ -7,7 +7,8 @@ This library provides standard management pages and makes it easy to create new
 app-specific ones in order to fulfill those criteria. 
 
 The library is  intended to be web framework agnostic and currently has support for 
-anything using the servlet API or the Play framework. A small adapter library 
+anything using the servlet API, the Play framework and as a standalone internal server
+running on a separate port. A small adapter library
 for the request and response abstractions, blatantly inspired by/ripped off from 
 [lift](http://www.liftweb.net), needs to be added to support other frameworks.
 
@@ -22,7 +23,7 @@ Add the dependency to your build
 In your build.sbt:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.7"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.10"
 
 As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
 to Scala 2.9.1.
@@ -60,10 +61,11 @@ Your filter class should derive from `com.gu.management.ManagementFilter` and im
 the pages member:
 
     class MyAppManagementFilter extends ManagementFilter {
+      val applicationName = "My Application Name"
       lazy val pages =
         new DummyPage() ::
         new ManifestPage() ::
-        new Switchboard(Switches.all) ::
+        new Switchboard(Switches.all, applicationName) ::
         new StatusPage(TimingMetrics.all) ::
         Nil
     }
@@ -110,7 +112,7 @@ Add the dependency to your build
 In your build.sbt for sbt 0.10:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-play" % "5.7"
+    libraryDependencies += "com.gu" %% "management-play" % "5.10"
 
 As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
 to Scala 2.9.1.
@@ -130,11 +132,11 @@ In `app/controllers/Management.scala` add the controller definition with the des
 pages:
 
     object Management extends ManagementController {
-
+      val applicationName = "My application name"
       lazy val pages =
         new DummyPage() ::
         new ManifestPage() ::
-        new Switchboard(Switches.all) ::
+        new Switchboard(Switches.all, applicationName) ::
         new StatusPage(TimingMetrics.all) ::
         Nil
     }
@@ -165,6 +167,102 @@ the
 [status page](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/StatusPage.scala),
 and a more complex page that supports POSTs is
 [the switchboard](https://github.com/guardian/guardian-management/blob/master/management/src/main/scala/com/gu/management/switchables.scala).
+
+
+Getting started (standalone)
+============================
+
+The management-internal shim allows the management libraries to run separate of any container or framework, on a second
+port, making use of an internally implemented HTTP server.
+
+The library will use the first port that it can bind to from 18080 to 18099 and, if permissions allow it will write
+a file out to /var/run/ports/<name>.port containing the number of the port that it has bound to.
+
+Add the dependency to your build
+--------------------------------
+
+In your build.sbt for sbt 0.10:
+
+    resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
+    libraryDependencies += "com.gu" %% "management-internal" % "5.10"
+
+Implement a handler
+-------------------
+
+Implement the ManagementHandler variable applicationName and pages.  The latter should contain
+the list of pages for your application - see above.
+
+```scala
+val handler = new ManagementHandler {
+    val applicationName = "my-application-name"
+    def pages = List(
+        new ManifestPage(),
+        new Switchboard(Switches.all, applicationName),
+        new StatusPage(applicationName,TimingMetrics.all)
+    )
+}
+```
+
+Start and stop the internal server
+----------------------------------
+
+You should call ManagementServer.start and ManagementServer.shutdown at appropriate points
+in your application.
+
+```scala
+// bind the port and try to write the port number out to file
+ManagementServer.start(handler)
+```
+
+```scala
+// shutdown to unregister the port binding properly
+ManagementServer.shutdown()
+```
+
+Using the internal server in Play 2
+===================================
+
+Configure your dependencies
+---------------------------
+
+    resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
+    libraryDependencies += "com.gu" %% "management-play" % "5.10"
+
+Add to the play plugins file
+----------------------------
+
+Add the following line to conf/play.plugins (create it if it doesn't exist):
+
+    1000:com.gu.management.play.InternalManagementPlugin
+
+Add your application name
+-------------------------
+
+Add your application name to your application.conf:
+
+    application.name="my-application-name"
+
+Bind the management pages
+-------------------------
+
+Create a scala Object somewhere in your project that binds in your list of management pages:
+
+```scala
+object Management {
+  val applicationName = app.configuration.getString("application.name").get
+
+  lazy val pages = List(
+    new ManifestPage,
+    new HealthcheckManagementPage,
+    new Switchboard(Switches.all, applicationName),
+    StatusPage(applicationName, Metrics.all),
+    new LogbackLevelPage(applicationName)
+  )
+
+  val plugin = Play.current.plugin[InternalManagementPlugin]
+  plugin.foreach { _.registerPages(pages) }
+}
+```
 
 
 Providing metrics for GANGLIA

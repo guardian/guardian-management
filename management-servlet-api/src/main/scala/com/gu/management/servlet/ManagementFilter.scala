@@ -22,11 +22,12 @@ trait ManagementFilter extends AbstractHttpFilter with Loggable {
     }
   }
 
-  lazy val pagesWithIndex = IndexPage(pages, version) :: pages
+  lazy val pagesWithIndex = IndexPage(pages, applicationName, version) :: pages
 
   /**
-   * Implement this member with a list of the management pages
-   * you want to include
+   * Implement these members with the application name and a list of the
+   * management pages you want to include
    */
+  val applicationName: String
   val pages: List[ManagementPage]
 }

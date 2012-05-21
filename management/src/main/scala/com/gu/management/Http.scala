@@ -16,12 +16,14 @@ object Method {
   }
 }
 
-sealed abstract class ResponseBody { def toText: String }
+sealed trait ResponseBody {
+  def toText: String
+  def length: Int = toText.length
+}
 case class TextResponseBody(text: String) extends ResponseBody { lazy val toText = text }
 case class HtmlResponseBody(html: Elem) extends ResponseBody { lazy val toText = html.toString() }
 case class XmlResponseBody(xml: Elem) extends ResponseBody { lazy val toText = xml.toString() }
 case class JsonResponseBody(json: JValue) extends ResponseBody { lazy val toText = pretty(render(json)) }
-case object NoResponseBody extends ResponseBody { lazy val toText = "" }
 
 /*
  * requestURI: the part of this request's URL from the protocol name up to the query string
@@ -43,7 +45,7 @@ trait HttpResponse {
   var contentType: String
 
   var status: Int
-  var body: ResponseBody
+  var body: Option[ResponseBody] = None
 
   def send()
   def sendError(code: Int, message: String)

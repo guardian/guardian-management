@@ -16,7 +16,6 @@ object ServletHttpRequest {
 case class ServletHttpResponse(httpServletResponse: HttpServletResponse) extends HttpResponse {
   var contentType: String = "text/html"
   var status: Int = 200
-  var body: ResponseBody = NoResponseBody
 
   def send() {
     httpServletResponse setCharacterEncoding encoding
@@ -27,7 +26,9 @@ case class ServletHttpResponse(httpServletResponse: HttpServletResponse) extends
     }
 
     httpServletResponse setStatus status
-    httpServletResponse.getWriter.println(body.toText)
+    body.foreach { realBody =>
+      httpServletResponse.getWriter.println(realBody.toText)
+    }
   }
 
   def sendError(code: Int, message: String) {

@@ -34,13 +34,14 @@ object Properties {
 }
 
 class ScalaManagementFilter extends ManagementFilter {
+  val applicationName = "Example Servlet API Application"
   lazy val pages =
     new DummyPage() ::
       new ManifestPage() ::
-      new Switchboard(Switches.all) ::
-      StatusPage("Example", TimingMetrics.all) ::
+      new Switchboard(Switches.all, applicationName) ::
+      StatusPage(applicationName, TimingMetrics.all) ::
       new HealthcheckManagementPage() ::
       new PropertiesPage(Properties.all) ::
-      new LogbackLevelPage() ::
+      new LogbackLevelPage(applicationName) ::
       Nil
 }
