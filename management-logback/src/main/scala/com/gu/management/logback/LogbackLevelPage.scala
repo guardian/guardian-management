@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 import scala.xml.Text
 
-class LogbackLevelPage extends HtmlManagementPage with Postable {
+class LogbackLevelPage(val applicationName: String) extends HtmlManagementPage with Postable {
   val myLogger = LoggerFactory.getLogger(getClass)
 
   val path = "/management/logback"

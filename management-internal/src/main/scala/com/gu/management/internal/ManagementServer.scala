@@ -6,17 +6,16 @@ import java.net.{BindException, InetSocketAddress}
 import java.io.File
 import sbt._
 
-object ManagementServer extends Loggable {
+object ManagementServer extends Loggable with PortFileHandling {
   val managementPort = 18080
   val managementLimit = 18099
   var server: Option[HttpServer] = None
-  var portFile: Option[File] = None
 
-  def start(handler: ManagementHandler, appName: Option[String] = None) {
+  def start(handler: ManagementHandler, appName: String) {
     if (server.isEmpty) {
       server = startServer(managementPort, handler)
       server.foreach { realServer =>
-        portFile = PortFile.createFile(appName,realServer.getAddress.getPort)
+        createPortFile(appName,realServer.getAddress.getPort)
       }
     }
   }
@@ -45,24 +44,29 @@ object ManagementServer extends Loggable {
     synchronized{
       server.foreach{ _.stop(0) }
       server = None
-      portFile.foreach { PortFile.deleteFile(_) }
+      deletePortFile()
     }
   }
 }
 
-object PortFile extends Loggable {
+trait PortFileHandling extends Loggable {
   val portFileRoot="/var/run/ports/"
-  def createFile(appName: Option[String], port: Int): Option[File] = {
-    val file = new File(portFileRoot + appName.getOrElse(port.toString) + ".port")
+  private var portFile: Option[File] = None
+  def createPortFile(appName: String, port: Int): Boolean = {
+    val file = new File(portFileRoot + appName + ".port")
     try {
       IO.write(file, port.toString, append=false)
-      Some(file)
+      portFile = Some(file)
+      true
     } catch {
-      case _ => None
+      case _ =>
+        logger.warn("Could not create management port file at "+file)
+        false
     }
   }
-  def deleteFile(file: File) {
-    IO.delete(file)
+  def deletePortFile() {
+    portFile.foreach( IO.delete(_) )
+    portFile = None
   }
 }
 
@@ -100,12 +104,13 @@ trait ManagementHandler extends HttpHandler with Loggable {
     }
   }
 
-  lazy val pagesWithIndex = IndexPage(pages, version) :: pages
+  lazy val pagesWithIndex = IndexPage(pages, applicationName, version) :: pages
 
   /**
-   * Implement this member with a list of the management pages
-   * you want to include
+   * Implement these members with an application name and list of the
+   * management pages you want to include
    */
+  val applicationName: String
   def pages: List[ManagementPage]
 
 }

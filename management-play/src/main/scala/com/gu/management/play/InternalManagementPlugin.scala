@@ -11,9 +11,10 @@ class InternalManagementPlugin(val app: Application) extends Plugin with Loggabl
     handlerPages = pages
   }
 
-  def appName: Option[String] = Option(System.getProperty("GUapps"))
+  lazy val appName: String = app.configuration.getString("application.name").get
 
   val handler = new ManagementHandler {
+    val applicationName = appName
     def pages = handlerPages
   }
 

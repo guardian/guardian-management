@@ -34,13 +34,14 @@ object Properties {
 }
 
 object Management extends ManagementController {
+  val applicationName: String = "Example Play App"
   lazy val pages = List(
     new DummyPage(),
     new ManifestPage(),
-    new Switchboard(Switches.all),
-    StatusPage("Example", ExceptionCountMetric :: ServerErrorCounter :: ClientErrorCounter :: TimingMetrics.all),
+    new Switchboard(Switches.all, applicationName),
+    StatusPage(applicationName, ExceptionCountMetric :: ServerErrorCounter :: ClientErrorCounter :: TimingMetrics.all),
     new HealthcheckManagementPage(),
     new PropertiesPage(Properties.all),
-    new LogbackLevelPage()
+    new LogbackLevelPage(applicationName)
   )
 }

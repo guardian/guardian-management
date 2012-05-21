@@ -52,9 +52,10 @@ trait HtmlManagementPage extends ManagementPage {
   final def get(request: HttpRequest) = HtmlResponse(
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
-        <title>{ title }</title>
+        <title>{ applicationName } | { title }</title>
       </head>
       <body>
+        <h1>{ applicationName }</h1>
         <h2>{ title }</h2>
         { body(request) }
       </body>
@@ -62,5 +63,6 @@ trait HtmlManagementPage extends ManagementPage {
 
   def title: String
   def body(request: HttpRequest): NodeSeq
+  def applicationName: String
 }
 
