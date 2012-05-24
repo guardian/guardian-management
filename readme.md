@@ -240,8 +240,8 @@ Bind the management pages
 
 The plugin locates the pages and application name by convention.
 
-Create a scala Object called conf.Management that mixes in the ManagementPageManifest trait
-binds in your list of management pages:
+Create a scala Object called conf.Management that mixes in the ManagementPageManifest trait to
+provide the list of pages and your application name to the plugin:
 
 ```scala
 package conf

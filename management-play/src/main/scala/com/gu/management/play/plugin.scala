@@ -1,48 +1,50 @@
 package com.gu.management.play
 
-import com.gu.management.{ Loggable, ManagementPage }
+import com.gu.management.ManagementPage
 import com.gu.management.internal._
-import play.api.{ Play, Plugin, Application }
+import org.reflections.Reflections
+import scala.collection.JavaConversions._
+import play.api.{ Logger, Play, Plugin, Application }
 
-trait ManagementPageManifest {
-  val pages: List[ManagementPage]
+trait Management {
   val applicationName: String
-  def handler = new ManagementHandler {
-    def pages = ManagementPageManifest.this.pages
-    val applicationName = ManagementPageManifest.this.applicationName
-  }
+  val pages: List[ManagementPage]
 }
 
-object CompanionReflector {
-  def companion[T](name: String)(implicit man: Manifest[T]): T =
-    Class.forName(name + "$").getField("MODULE$").get(man.erasure).asInstanceOf[T]
-}
+class InternalManagementPlugin(val app: Application) extends Plugin {
 
-class InternalManagementPlugin(val app: Application) extends Plugin with Loggable {
-
-  lazy val appName: String = app.configuration.getString("application.name").get
-  var handlerPages: List[ManagementPage] = Nil
-
-  def registerPages(pages: List[ManagementPage]) {
-    logger.debug("Registering new management pages")
-    handlerPages = pages
-  }
+  implicit val log = Logger(getClass)
 
   override def onStart() {
-    logger.debug("Registering management pages")
-    try {
-      val pageManifestClassName = app.configuration.getString("management.manifestobject").getOrElse("conf.Management")
-      val pageManifest: ManagementPageManifest = CompanionReflector.companion[ManagementPageManifest](pageManifestClassName)
-      val handler = pageManifest.handler
-      logger.debug("Starting internal management server")
-      ManagementServer.start(handler)
-    } catch {
-      case e: Exception => logger.error("Failed to start management server", e)
+    log.debug("Registering management pages")
+
+    val searchRoot = app.getConfigurationProperty("management.search.root", "conf")
+    val classes = classOf[Management].subTypesFrom(searchRoot).toList
+
+    classes match {
+      case Nil =>
+        log.error("Can't start management server, no subtype of com.gu.management.play.Management found in package %s." format searchRoot)
+        throw new RuntimeException("No management subtype found")
+
+      case _ if classes.size > 1 =>
+        log.error("Not starting management server, multiple subtypes of com.gu.management.play.Management found in package %s." format searchRoot)
+        throw new RuntimeException("No management subtype found")
+
+      //      case List(managementClass: Class[_ <: Management]) =>
+      case List(managementClass) =>
+        val management = managementClass.getField("MODULE$").get(null).asInstanceOf[Management]
+        val handler = new ManagementHandler {
+          val applicationName = management.applicationName
+          val pages = management.pages
+        }
+
+        log.debug("Starting internal management server")
+        ManagementServer.start(handler)
     }
   }
 
   override def onStop() {
-    logger.debug("Shutting down management server")
+    log.debug("Shutting down management server")
     ManagementServer.shutdown()
   }
 }

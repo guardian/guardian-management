@@ -10,11 +10,14 @@ object ManagementServer extends Loggable with PortFileHandling {
   val managementPort = 18080
   val managementLimit = 18099
   val permittedPorts = managementPort to managementLimit
-  var server: Option[HttpServer] = None
+  private var server: Option[HttpServer] = None
 
   def start(handler: ManagementHandler) {
     startServer(managementPort, handler)
   }
+
+  def isRunning(): Boolean = server.isDefined
+  def port(): Int = server.get.getAddress.getPort
 
   private def startServer(port: Int, handler: ManagementHandler) {
     synchronized {
