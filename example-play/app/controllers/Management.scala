@@ -38,7 +38,7 @@ object Management extends ManagementController {
   lazy val pages = List(
     new DummyPage(),
     new ManifestPage(),
-    new Switchboard(Switches.all, applicationName),
+    new Switchboard(applicationName, Switches.all),
     StatusPage(applicationName, ExceptionCountMetric :: ServerErrorCounter :: ClientErrorCounter :: TimingMetrics.all),
     new HealthcheckManagementPage(),
     new PropertiesPage(Properties.all),

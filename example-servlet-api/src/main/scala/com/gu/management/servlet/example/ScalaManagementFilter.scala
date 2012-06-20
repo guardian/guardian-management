@@ -38,7 +38,7 @@ class ScalaManagementFilter extends ManagementFilter {
   lazy val pages =
     new DummyPage() ::
       new ManifestPage() ::
-      new Switchboard(Switches.all, applicationName) ::
+      new Switchboard(applicationName, Switches.all) ::
       StatusPage(applicationName, TimingMetrics.all) ::
       new HealthcheckManagementPage() ::
       new PropertiesPage(Properties.all) ::
