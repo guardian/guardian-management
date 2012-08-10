@@ -3,9 +3,9 @@ package com.gu.management
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.Callable
 
-private[management] case class Definition(group: String, name: String)
+case class Definition(group: String, name: String)
 
-private[management] case class StatusMetric(
+case class StatusMetric(
   group: String = "application",
   master: Option[Definition] = None,
   // name should be brief and underscored not camel case
@@ -31,92 +31,52 @@ trait Metric {
   lazy val definition: Definition = Definition(group, name)
 }
 
-abstract class InstantaneousMetric[A](
-    `type`: String,
-    val group: String,
-    val name: String,
-    title: String,
-    description: String,
-    getValue: () => A,
-    master: Option[Metric] = None) extends Metric {
+trait AbstractMetric[T] extends Metric {
+  val `type`: String
+  val group: String
+  val name: String
+  val title: String
+  val description: String
+  val master: Option[Metric] = None
 
-  def asJson = StatusMetric(
-    group = group,
-    master = master map { _.definition },
-    name = name,
-    `type` = `type`,
-    title = title,
-    description = description,
-    value = Some(getValue().toString)
-  )
+  val getValue: () => T
+
+  def asJson: StatusMetric = StatusMetric(group, master map { _.definition }, name, `type`, title, description)
 }
 
-class GaugeMetric(group: String, name: String, title: String, description: String, getCount: () => Long,
-  master: Option[Metric] = None)
-    extends InstantaneousMetric[Long]("gauge", group, name, title, description, getCount, master) {
-
-  def count: Long = getCount()
+class GaugeMetric[T](
+    val group: String, val name: String, val title: String, val description: String,
+    val getValue: () => T, override val master: Option[Metric] = None) extends AbstractMetric[T] {
+  val `type`: String = "gauge"
+  override def asJson: StatusMetric = super.asJson.copy(value = Some(getValue().toString))
 }
 
-object GaugeMetric {
-
-  def apply(group: String, name: String, title: String, description: String, getCount: () => Long): GaugeMetric =
-    new GaugeMetric(group, name, title, description, getCount, None)
-
-  def apply(group: String, name: String, title: String, description: String, getCount: () => Long, master: Metric): GaugeMetric =
-    new GaugeMetric(group, name, title, description, getCount, Some(master))
-
-}
-
-class TextMetric(group: String, name: String, title: String, description: String, getValue: () => String,
-  master: Option[Metric] = None)
-    extends InstantaneousMetric[String]("text", group, name, title, description, getValue, master) {
-
-  def value: String = getValue()
-
+class TextMetric(
+    val group: String, val name: String, val title: String, val description: String,
+    val getValue: () => String, override val master: Option[Metric] = None) extends AbstractMetric[String] {
+  override val `type`: String = "text"
+  override def asJson: StatusMetric = super.asJson.copy(value = Some(getValue().toString))
 }
 
 class CountMetric(
-    val group: String,
-    val name: String,
-    title: String,
-    description: String,
-    master: Option[Metric] = None) extends Metric {
-  private val _count = new AtomicLong()
+    val group: String, val name: String, val title: String, val description: String,
+    override val master: Option[Metric] = None) extends AbstractMetric[Long] {
+  val `type`: String = "counter"
 
-  def recordCount(count: Int) {
-    _count.addAndGet(count)
-  }
+  private val _count = new AtomicLong()
+  def recordCount(count: Int): Long = _count.addAndGet(count)
+  def increment(): Long = recordCount(1)
 
   def count = _count.get
+  val getValue = () => count
 
-  def asJson = StatusMetric(
-    group = group,
-    master = master map { _.definition },
-    name = name,
-    `type` = "counter",
-    title = title,
-    description = description,
-    count = Some(count.toString)
-  )
-}
-
-object CountMetric {
-
-  def apply(group: String, name: String, title: String, description: String): CountMetric =
-    new CountMetric(group, name, title, description, None)
-
-  def apply(group: String, name: String, title: String, description: String, master: Metric): CountMetric =
-    new CountMetric(group, name, title, description, Some(master))
-
+  override def asJson: StatusMetric = super.asJson.copy(count = Some(getValue().toString))
 }
 
 class TimingMetric(
-    val group: String,
-    val name: String,
-    title: String,
-    description: String,
-    master: Option[Metric] = None) extends Metric {
+    val group: String, val name: String, val title: String, val description: String,
+    override val master: Option[Metric] = None) extends AbstractMetric[Long] {
+  val `type` = "timer"
 
   private val _totalTimeInMillis = new AtomicLong()
   private val _count = new AtomicLong()
@@ -126,20 +86,14 @@ class TimingMetric(
     _count.incrementAndGet
   }
 
-  def asJson = StatusMetric(
-    group = group,
-    master = master map { _.definition },
-    name = name,
-    `type` = "timer",
-    title = title,
-    description = description,
+  def totalTimeInMillis = _totalTimeInMillis.get
+  def count = _count.get
+  val getValue = () => totalTimeInMillis
+
+  override def asJson: StatusMetric = super.asJson.copy(
     count = Some(count.toString),
     totalTime = Some(totalTimeInMillis.toString)
   )
-
-  def totalTimeInMillis = _totalTimeInMillis.get
-
-  def count = _count.get
 
   // to use this class, you can write your own wrappers
   // and call recordTimeSpent, or you may use this one
@@ -162,13 +116,5 @@ class TimingMetric(
 }
 
 object TimingMetric {
-
-  def apply(group: String, name: String, title: String, description: String): TimingMetric =
-    new TimingMetric(group, name, title, description, None)
-
-  def apply(group: String, name: String, title: String, description: String, master: Metric): TimingMetric =
-    new TimingMetric(group, name, title, description, Some(master))
-
   def empty = new TimingMetric("application", "Empty", "Empty", "Empty")
-
 }

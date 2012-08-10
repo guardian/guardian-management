@@ -6,5 +6,5 @@ cat /dev/null | java -Xmx768M -XX:MaxPermSize=250m \
     -Dbuild.vcs.number="$BUILD_VCS_NUMBER" \
     -Dhttp.proxyHost=devscreen.gudev.gnl \
     -Dhttp.proxyPort=3128 \
-    -jar sbt-launch-0.11.2.jar "$@"
+    -jar sbt-launch-0.11.3.jar "$@"
 

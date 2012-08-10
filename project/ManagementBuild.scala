@@ -1,11 +1,11 @@
 import com.typesafe.sbtscalariform.ScalariformPlugin
+import org.sbtidea.SbtIdeaPlugin._
 import sbt._
-import PlayProject._
 import sbt.PlayProject._
 
 object ManagementBuild extends Build {
 
-  lazy val root = Project("management-root", file(".")) aggregate (
+  lazy val root = Project("management-root", file(".")).aggregate(
     management,
     managementServletApi,
     managementPlay,
@@ -14,7 +14,7 @@ object ManagementBuild extends Build {
     managementMongo,
     exampleServletApi,
     examplePlay
-  )
+  ).settings(ideaSettings: _*)
 
   lazy val management = managementProject("management")
 
@@ -35,7 +35,7 @@ object ManagementBuild extends Build {
     applicationVersion = "1.0",
     dependencies = Nil,
     path = file("example-play"),
-    mainLang = SCALA) dependsOn (management, managementPlay, managementLogback)
+    mainLang = SCALA).settings(ideaSettings: _*) dependsOn (management, managementPlay, managementLogback)
 
-  def managementProject(name: String) = Project(name, file(name)).settings(ScalariformPlugin.scalariformSettings :_*)
+  def managementProject(name: String) = Project(name, file(name)).settings(ideaSettings: _*).settings(ScalariformPlugin.scalariformSettings :_*)
 }

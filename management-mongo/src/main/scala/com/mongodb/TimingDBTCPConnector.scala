@@ -2,6 +2,7 @@ package com.mongodb
 
 import scala.collection.JavaConversions._
 import com.gu.management.{ Loggable, Timing, TimingMetric }
+import com.mongodb.ReplicaSetStatus.Node
 
 class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private val timingMetric: TimingMetric, mongo: Mongo, serverAddresses: List[ServerAddress])
     extends DBTCPConnector(mongo, serverAddresses) with Loggable {
@@ -22,8 +23,6 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
 
   override def debugString() = targetConnector.debugString()
 
-  override def testMaster() = targetConnector.testMaster()
-
   override def fetchMaxBsonObjectSize() = targetConnector.fetchMaxBsonObjectSize()
 
   override def checkMaster(force: Boolean, failIfNoMaster: Boolean) = targetConnector.checkMaster(force, failIfNoMaster)
@@ -39,8 +38,6 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
   override def getAllAddress = targetConnector.getAllAddress
 
   override def getAddress = targetConnector.getAddress
-
-  override def _checkWriteError(db: DB, mp: DBTCPConnector#MyPort, port: DBPort, concern: WriteConcern) = targetConnector._checkWriteError(db, mp, port, concern)
 
   override def _checkClosed() = targetConnector._checkClosed()
 
@@ -72,4 +69,12 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
   override def start() { targetConnector.start }
 
   override def isOpen: Boolean = targetConnector.isOpen
+
+  override def _checkWriteError(db: DB, port: DBPort, concern: WriteConcern) = targetConnector._checkWriteError(db, port, concern)
+
+  override def setMaster(master: Node) {
+    targetConnector.setMaster(master)
+  }
+
+  override def getMyPort = targetConnector.getMyPort
 }

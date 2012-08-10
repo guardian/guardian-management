@@ -18,7 +18,7 @@ object JvmMetrics {
           name = "num_threads",
           title = "Number of active threads",
           description = "Number of threads currently active as reported by the jvm",
-          getCount = () => ManagementFactory.getThreadMXBean.getThreadCount
+          getValue = () => ManagementFactory.getThreadMXBean.getThreadCount
         )
       )
     } catch {
@@ -36,7 +36,7 @@ object JvmMetrics {
           name = "total_threads",
           title = "Thread started threads",
           description = "Threads started since the application started as reported by the jvm",
-          getCount = () => ManagementFactory.getThreadMXBean.getTotalStartedThreadCount
+          getValue = () => ManagementFactory.getThreadMXBean.getTotalStartedThreadCount
         )
       )
     } catch {

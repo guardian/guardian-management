@@ -1,3 +1,7 @@
 #!/bin/bash
 
-java -Xmx512M -XX:MaxPermSize=250m -Dhttp.proxyHost=devscreen.gudev.gnl -Dhttp.proxyPort=3128 -jar `dirname $0`/sbt-launch-0.11.2.jar  "$@"
+java -Xmx512M -XX:MaxPermSize=250m \
+    -Dhttp.proxyHost=devscreen.gudev.gnl \
+    -Dhttp.proxyPort=3128 \
+    -jar `dirname $0`/sbt-launch-0.11.3.jar  "$@"
+
