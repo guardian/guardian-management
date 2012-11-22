@@ -6,11 +6,9 @@ import play.api.libs.concurrent.Akka
 
 object ScalaApp extends Controller {
   def apply() = Action {
-    TimingMetrics.requests measure {
-      Switches.takeItDown match {
-        case On() => InternalServerError("Temporarily switched off!")
-        case _ => Ok("Thank you for invoking this app!")
-      }
+    conf.Switches.takeItDown match {
+      case On() => InternalServerError("Temporarily switched off!")
+      case _ => Ok("Thank you for invoking this app!")
     }
   }
 
