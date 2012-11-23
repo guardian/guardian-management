@@ -1,8 +1,9 @@
 package com.gu.management.play
 
 import play.api.GlobalSettings
-import com.gu.management.{ CountMetric, TimingMetric }
+import com.gu.management.{ StopWatch, CountMetric, TimingMetric }
 import play.api.mvc._
+import AsyncResultUnwrapper._
 
 trait StatusCounters extends ErrorCounter with OkCounter with NotFoundCounter with RedirectCounter
 
@@ -14,7 +15,10 @@ trait RequestTimer extends GlobalSettings {
     super.onRouteRequest(req) map {
       case a: Action[AnyContent] =>
         Action { request: Request[AnyContent] =>
-          requestTimer.measure(a(request))
+          val s = new StopWatch
+          val result = a(request)
+          onFinalResult(result) { _ => requestTimer.recordTimeSpent(s.elapsed) }
+          result
         }
       case o => o
     }
@@ -57,19 +61,33 @@ trait ErrorCounter extends GlobalSettings {
 }
 
 private object HandleStatusCode {
+
   def apply(handler: Handler)(f: PartialFunction[Int, Unit]): Handler = handler match {
     case a: Action[AnyContent] =>
       Action {
         request: Request[AnyContent] =>
-          a(request) match {
-            case result: SimpleResult[AnyContent] =>
-              val status = result.header.status
+          val result = a(request)
+          onFinalResult(result) {
+            case simpleResult: SimpleResult[AnyContent] =>
+              val status = simpleResult.header.status
               if (f.isDefinedAt(status)) f(status)
-              result
-            case result => result
+            case _ =>
           }
+          result
       }
     case o => o
   }
 }
 
+private object AsyncResultUnwrapper {
+  /**
+   * AsyncResult can - theoretically- return another AsyncResult, which we don't want. Redeem only when have a
+   * non-async result.
+   */
+  def onFinalResult(result: Result)(k: Result => Unit) {
+    result match {
+      case AsyncResult(promise) => promise.onRedeem(nestedResult => onFinalResult(nestedResult)(k))
+      case nonAsyncResult => k(nonAsyncResult)
+    }
+  }
+}

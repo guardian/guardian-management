@@ -1,4 +1,4 @@
-package controllers
+package conf
 
 import com.gu.management._
 import com.gu.management.play.ManagementController
@@ -18,6 +18,16 @@ object Switches {
   val all = List(omniture, takeItDown, Healthcheck.switch)
 }
 
+object RequestMetrics {
+  object Request200s extends CountMetric("request-status", "200_ok", "200 Ok", "number of pages that responded 200")
+  object Request50xs extends CountMetric("request-status", "50x_error", "50x Error", "number of pages that responded 50x")
+  object Request404s extends CountMetric("request-status", "404_not_found", "404 Not found", "number of pages that responded 404")
+  object Request30xs extends CountMetric("request-status", "30x_redirect", "30x Redirect", "number of pages that responded with a redirect")
+  object RequestOther extends CountMetric("request-status", "other", "Other", "number of pages that responded with an unexpected status code")
+
+  val all = List(Request200s, Request50xs, Request404s, RequestOther, Request30xs)
+}
+
 // timing stuff
 object TimingMetrics {
   val downtime = new TimingMetric("example", "downtime", "downtime", "Amount of downtime")
@@ -33,13 +43,13 @@ object Properties {
   val all = "key1=value1\nkey2=value2"
 }
 
-object Management extends ManagementController {
+object Management extends com.gu.management.play.Management {
   val applicationName: String = "Example Play App"
   lazy val pages = List(
     new DummyPage(),
     new ManifestPage(),
     new Switchboard(applicationName, Switches.all),
-    StatusPage(applicationName, ExceptionCountMetric :: ServerErrorCounter :: ClientErrorCounter :: TimingMetrics.all),
+    StatusPage(applicationName, ExceptionCountMetric :: ServerErrorCounter :: ClientErrorCounter :: TimingMetrics.all ::: RequestMetrics.all),
     new HealthcheckManagementPage(),
     new PropertiesPage(Properties.all),
     new LogbackLevelPage(applicationName)
