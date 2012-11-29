@@ -1,7 +1,6 @@
 package conf
 
 import com.gu.management._
-import com.gu.management.play.ManagementController
 import com.gu.management.logback._
 
 // example of creating your own new page type

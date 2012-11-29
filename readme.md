@@ -112,37 +112,15 @@ Add the dependency to your build
 In your build.sbt for sbt 0.10:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-play" % "5.17"
+    libraryDependencies += "com.gu" %% "management-play" % "5.20"
 
 As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
 to Scala 2.9.1.
 
-Add the management controller to your routes
---------------------------------------------
-
-Hook in the management URLs to your Play `conf/routes` file using the following:
-
-    GET     /management$path<.*>        controllers.Management.apply(path)
-    POST    /management$path<.*>        controllers.Management.apply(path)
-
-Implement the management controller
------------------------------------
-
-In `app/controllers/Management.scala` add the controller definition with the desired management
-pages:
-
-    object Management extends ManagementController {
-      val applicationName = "My application name"
-      lazy val pages =
-        new DummyPage() ::
-        new ManifestPage() ::
-        new Switchboard(applicationName, Switches.all) ::
-        new StatusPage(applicationName, TimingMetrics.all) ::
-        Nil
-    }
-
 Look at the example!
 -----------------------
+
+See example commit https://github.com/guardian/guardian-management/commit/f801e8d0
 
 The [example project](https://github.com/guardian/guardian-management/tree/master/example-play) has
 management routes set up and uses some switches and timing metrics.
@@ -156,8 +134,8 @@ management routes set up and uses some switches and timing metrics.
 Try the following URLs locally:
 
  * http://localhost:9000/scala-app
- * http://localhost:9000/management
- * http://localhost:9000/management/switchboard
+ * http://localhost:18080/management
+ * http://localhost:18080/management/switchboard
 
 Also, enable the `take-it-down` switch and retry `/scala-app`.
 
