@@ -34,6 +34,12 @@ object Properties {
 }
 
 class ScalaManagementFilter extends ManagementFilter {
+  val userProvider = new UserProvider {
+    // This is a very bad user provider, looking it up in a db or Properties would be better
+    // Note you can just check password or username, it's up to you
+    def isValid(credentials: UserCredentials) = credentials.username == credentials.password
+    val realm = "ScalaManagementFilter"
+  }
   val applicationName = "Example Servlet API Application"
   lazy val pages =
     new DummyPage() ::

@@ -23,7 +23,7 @@ Add the dependency to your build
 In your build.sbt:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.17"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.22"
 
 As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
 to Scala 2.9.1.
@@ -58,10 +58,14 @@ Implement the filter class
 -----------------------------
 
 Your filter class should derive from `com.gu.management.ManagementFilter` and implement
-the pages member:
+the pages member and have a UserProvider:
 
     class MyAppManagementFilter extends ManagementFilter {
       val applicationName = "My Application Name"
+      val userProvider = new UserProvider {
+        def realm = "My App"
+        def isValid(credentials: UserCredentials) = credentials.password == "letmein"
+      }
       lazy val pages =
         new DummyPage() ::
         new ManifestPage() ::
@@ -72,6 +76,21 @@ the pages member:
 
 Even for mostly java projects, you'll need to write your management pages in scala. However,
 things like timing metrics and switches have a java-friendly interface and are usable from java.
+
+The UserProvider is responsible for deciding whether an authenticated page can be viewed.  The Switchboard and Logback
+pages are authenticated by default and any management page which can change the state of the system or reveal
+confidential information should be protected.
+
+If you want to store a username and password in configuration and you are using Guardian Configuration, a sample
+provider would be:
+
+    val userProvider = new UserProvider {
+        def realm = "Content-Api"
+        def isValid(credentials: UserCredentials) =
+          credentials.username == ContentApiConfiguration.configuration.getStringProperty("management.username") &&
+          credentials.password == ContentApiConfiguration.configuration.getStringProperty("management.password")
+    }
+
 
 Look at the example!
 -----------------------

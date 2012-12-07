@@ -25,6 +25,8 @@ trait ManagementPage {
   }
 
   def canDispatch(request: HttpRequest): Boolean = dispatch isDefinedAt request
+
+  def needsAuth = false
 }
 
 /**
@@ -38,6 +40,8 @@ trait Postable extends ManagementPage {
       post(r)
       RedirectResponse(requestURI)
   }
+
+  override def needsAuth = true
 }
 
 trait JsonManagementPage extends ManagementPage {

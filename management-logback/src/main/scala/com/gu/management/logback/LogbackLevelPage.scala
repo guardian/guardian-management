@@ -8,7 +8,7 @@ import scala.xml.Text
 
 class LogbackLevelPage(val applicationName: String) extends HtmlManagementPage with Postable {
   val myLogger = LoggerFactory.getLogger(getClass)
-
+  override val needsAuth = true
   val path = "/management/logback"
 
   private val levels = List(

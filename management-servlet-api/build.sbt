@@ -2,6 +2,7 @@
 libraryDependencies ++= Seq(
     "javax.servlet" % "servlet-api" % "2.4" % "provided",
     "org.specs2" %% "specs2" % "1.5" % "test",
+    "org.scalatest" %% "scalatest" % "1.8" % "test",
     "net.liftweb" %% "lift-testkit" % "2.4" % "test"
 )
 

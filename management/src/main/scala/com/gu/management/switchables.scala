@@ -66,6 +66,7 @@ case class DefaultSwitch(name: String, description: String, initiallyOn: Boolean
 class Switchboard(val applicationName: String, switches: Seq[Switchable]) extends HtmlManagementPage with Postable {
   val title = "Switchboard"
   val path = "/management/switchboard"
+  override val needsAuth = true
 
   def body(r: HttpRequest) = {
     val switchToShow = r getParameter "switch"
