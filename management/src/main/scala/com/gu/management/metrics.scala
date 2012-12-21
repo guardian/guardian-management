@@ -64,7 +64,7 @@ class CountMetric(
   val `type`: String = "counter"
 
   private val _count = new AtomicLong()
-  def recordCount(count: Int): Long = _count.addAndGet(count)
+  def recordCount(count: Long): Long = _count.addAndGet(count)
   def increment(): Long = recordCount(1)
 
   def count = _count.get
