@@ -1,12 +1,4 @@
-import com.gu.management.play.{ StatusCounters, RequestTimer }
-import play.api.GlobalSettings
+import conf.PlayExampleRequestMetrics
+import play.api.mvc.WithFilters
 
-object Global extends GlobalSettings with RequestTimer with StatusCounters {
-  import conf.RequestMetrics._
-
-  override val okCounter = Request200s
-  override val errorCounter = Request50xs
-  override val notFoundCounter = Request404s
-  override val redirectCounter = Request30xs
-  override val requestTimer = conf.TimingMetrics.requests
-}
+object Global extends WithFilters(PlayExampleRequestMetrics.asFilters: _*)

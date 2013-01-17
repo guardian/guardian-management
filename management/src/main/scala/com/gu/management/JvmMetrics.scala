@@ -22,7 +22,7 @@ object JvmMetrics {
         )
       )
     } catch {
-      case e =>
+      case e: Exception =>
         logger.debug("Failed to initialise active threads metric")
         None
     }
@@ -40,7 +40,7 @@ object JvmMetrics {
         )
       )
     } catch {
-      case e =>
+      case e: Exception =>
         logger.debug("Failed to initialise total threads metric")
         None
     }
@@ -59,7 +59,7 @@ object JvmMetrics {
         }
       }
     } catch {
-      case e =>
+      case e: Exception =>
         logger.trace("Failed to initialise gc metrics", e)
         Nil
     }
