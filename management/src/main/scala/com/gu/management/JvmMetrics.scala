@@ -67,15 +67,21 @@ object JvmMetrics {
   lazy val memoryUsage =
     try {
       ManagementFactory.getMemoryPoolMXBeans().toList flatMap { memPool: MemoryPoolMXBean =>
-        val memoryUsage = memPool.getUsage
-        if (memoryUsage == null) None
-        else Some(new GaugeMetric(
-          group = "jvm",
-          name = "%s memory usage".format(memPool.getName),
-          title = "%s Memory Usage".format(memPool.getName),
-          description = "%s memory usage as percentage of max value".format(memPool.getName),
-          getValue = () => math.round(memoryUsage.getUsed.toFloat / memoryUsage.getMax * 100)
-        ))
+        {
+          Option(memPool.getUsage) match {
+            case Some(_) => Some(new GaugeMetric(
+              group = "jvm",
+              name = "%s memory usage".format(memPool.getName),
+              title = "%s Memory Usage".format(memPool.getName),
+              description = "%s memory usage as percentage of max value".format(memPool.getName),
+              getValue = () => {
+                val currentUsage = memPool.getUsage
+                math.round(currentUsage.getUsed.toFloat / currentUsage.getMax * 100)
+              }
+            ))
+            case None => None
+          }
+        }
       }
     } catch {
       case e: Exception =>
