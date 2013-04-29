@@ -1,7 +1,9 @@
 package com.gu.management
 
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.Callable
+import java.util.concurrent.atomic.{ AtomicReference, AtomicLong }
+import java.util.concurrent.{ LinkedBlockingDeque, Callable }
+import collection.mutable
+import java.util
 
 case class Definition(group: String, name: String)
 
@@ -27,6 +29,7 @@ trait Metric {
   def group: String
   def name: String
   def asJson: StatusMetric
+  def json: Seq[StatusMetric] = List(asJson)
 
   lazy val definition: Definition = Definition(group, name)
 }
@@ -117,4 +120,48 @@ class TimingMetric(
 
 object TimingMetric {
   def empty = new TimingMetric("application", "Empty", "Empty", "Empty")
+}
+
+class ExtendedTimingMetric(override val group: String,
+    override val name: String,
+    override val title: String,
+    override val description: String,
+    override val master: Option[Metric] = None,
+    val percentiles: List[Int]) extends TimingMetric(group, name, title, description, master) {
+  val masterMetric = new TimingMetric(group, name, title, description)
+  val submetrics: Map[String, TimingMetric] = (percentiles map { pct: Int =>
+    val subname = name + "_" + pct
+    val subdesc = description + " (" + pct + "% percentile)"
+    subname -> new TimingMetric(group, subname, title, subdesc, Some(masterMetric))
+  }).toMap + (name -> masterMetric)
+
+  // Queue that can store no more than 30,000 entries and is threadsafe
+  val storedMetrics = new LinkedBlockingDeque[Long](30000)
+
+  override def recordTimeSpent(durationInMillis: Long) {
+    storedMetrics.offer(durationInMillis)
+    masterMetric.recordTimeSpent(durationInMillis)
+  }
+
+  def processMetrics() {
+    import scala.collection.JavaConverters._
+    val metricList = new util.ArrayList[Long]()
+    /* This drainTo locks for O(1) in openjdk, and O(n) in the sun jdk. */
+    storedMetrics.drainTo(metricList)
+    val sortedMetrics = metricList.asScala.sorted
+
+    percentiles foreach { pct =>
+      val offset = math.round(sortedMetrics.size * (pct / 100.0))
+      val metric = submetrics(name + "_" + pct)
+      sortedMetrics.take(offset.toInt).foreach(metric.recordTimeSpent(_))
+    }
+  }
+
+  override def asJson = masterMetric.asJson
+
+  override def json = {
+    // Side Effect, update the submetrics appropriately
+    processMetrics()
+    List(masterMetric.asJson) ::: submetrics.values.map(_.asJson).toList
+  }
 }
