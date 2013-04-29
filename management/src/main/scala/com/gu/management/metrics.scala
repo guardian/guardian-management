@@ -28,7 +28,7 @@ trait Metric {
   def group: String
   def name: String
   def asJson: StatusMetric
-  def json: Seq[StatusMetric]
+  def json: Seq[StatusMetric] = List(asJson)
 
   lazy val definition: Definition = Definition(group, name)
 }
@@ -44,7 +44,6 @@ trait AbstractMetric[T] extends Metric {
   val getValue: () => T
 
   def asJson: StatusMetric = StatusMetric(group, master map { _.definition }, name, `type`, title, description)
-  def json: Seq[StatusMetric] = List(asJson)
 }
 
 class GaugeMetric[T](
