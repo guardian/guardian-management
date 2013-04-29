@@ -1,8 +1,9 @@
 package com.gu.management
 
 import java.util.concurrent.atomic.{ AtomicReference, AtomicLong }
-import java.util.concurrent.Callable
+import java.util.concurrent.{ LinkedBlockingDeque, Callable }
 import collection.mutable
+import java.util
 
 case class Definition(group: String, name: String)
 
@@ -134,18 +135,20 @@ class ExtendedTimingMetric(override val group: String,
     subname -> new TimingMetric(group, subname, title, subdesc, Some(masterMetric))
   }).toMap + (name -> masterMetric)
 
-  var storedMetrics = new AtomicReference(new mutable.MutableList[Long]())
+  // Queue that can store no more than 30,000 entries and is threadsafe
+  val storedMetrics = new LinkedBlockingDeque[Long](30000)
 
-  /* For extended metrics, this is actually going to do the work */
-  //  def asJson = ???
   override def recordTimeSpent(durationInMillis: Long) {
-    storedMetrics.get += durationInMillis
+    storedMetrics.offer(durationInMillis)
     masterMetric.recordTimeSpent(durationInMillis)
   }
 
   def processMetrics() {
-    val metricList = storedMetrics.getAndSet(new mutable.MutableList[Long]())
-    val sortedMetrics = metricList.sorted
+    import scala.collection.JavaConverters._
+    val metricList = new util.ArrayList[Long]()
+    /* This drainTo locks for O(1) in openjdk, and O(n) in the sun jdk. */
+    storedMetrics.drainTo(metricList)
+    val sortedMetrics = metricList.asScala.sorted
 
     percentiles foreach { pct =>
       val offset = math.round(sortedMetrics.size * (pct / 100.0))
