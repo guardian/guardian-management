@@ -145,12 +145,10 @@ class ExtendedTimingMetric(override val group: String,
 
   def processMetrics() {
     val metricList = storedMetrics.getAndSet(new mutable.MutableList[Long]())
-    println("Total " + metricList.size)
     val sortedMetrics = metricList.sorted
 
     percentiles foreach { pct =>
       val offset = math.round(sortedMetrics.size * (pct / 100.0))
-      println("Recording only " + offset + " values")
       val metric = submetrics(name + "_" + pct)
       sortedMetrics.take(offset.toInt).foreach(metric.recordTimeSpent(_))
     }
