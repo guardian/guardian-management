@@ -16,5 +16,5 @@ object StatusPage {
 
 class StatusPage(application: String, metrics: () => Seq[Metric], defaultMetrics: Seq[Metric] = JvmMetrics.all) extends JsonManagementPage {
   val path = "/management/status"
-  def jsonObj = StatusResponseJson(application = application, metrics = metrics() ++ defaultMetrics map (_.asJson))
+  def jsonObj = StatusResponseJson(application = application, metrics = metrics() ++ defaultMetrics flatMap (_.json))
 }
