@@ -6,8 +6,6 @@ scalaVersion in ThisBuild := "2.10.0"
 
 crossScalaVersions in ThisBuild := Seq("2.9.1", "2.9.2", "2.10.0")
 
-releaseSettings
-
 publishArtifact := false
 
 packageOptions in ThisBuild <+= (version, name) map { (v, n) =>
