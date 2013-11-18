@@ -2,10 +2,10 @@ package com.mongodb
 
 import scala.collection.JavaConversions._
 import com.gu.management.{ Loggable, Timing, TimingMetric }
-import com.mongodb.ReplicaSetStatus.Node
+import com.mongodb.ConnectionStatus.Node
 
 class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private val timingMetric: TimingMetric, mongo: Mongo, serverAddresses: List[ServerAddress])
-    extends DBTCPConnector(mongo, serverAddresses) with Loggable {
+    extends DBTCPConnector(mongo) with Loggable {
 
   override def requestStart = targetConnector.requestStart()
 
@@ -22,8 +22,6 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
   override def close() = targetConnector.close()
 
   override def debugString() = targetConnector.debugString()
-
-  override def fetchMaxBsonObjectSize() = targetConnector.fetchMaxBsonObjectSize()
 
   override def checkMaster(force: Boolean, failIfNoMaster: Boolean) = targetConnector.checkMaster(force, failIfNoMaster)
 

@@ -6,9 +6,6 @@ libraryDependencies ++= Seq(
     "net.liftweb" %% "lift-testkit" % "2.5-M4" % "test"
 )
 
-// needed for specs2
-resolvers += ScalaToolsSnapshots
-
 resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 // disable publishing the main javadoc jar
