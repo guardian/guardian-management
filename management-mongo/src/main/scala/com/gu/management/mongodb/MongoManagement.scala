@@ -26,8 +26,7 @@ trait MongoManagement extends Loggable {
         new TimingDBTCPConnector(
           connectorField.get(connection.underlying).asInstanceOf[DBTCPConnector],
           MongoRequests,
-          connection.underlying,
-          connection.getAllAddress().toList
+          connection.underlying
         )
       )
       connectorField.setAccessible(false)

@@ -2,10 +2,10 @@ package com.mongodb
 
 import scala.collection.JavaConversions._
 import com.gu.management.{ Loggable, Timing, TimingMetric }
-import com.mongodb.ReplicaSetStatus.Node
+import com.mongodb.ConnectionStatus.Node
 
-class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private val timingMetric: TimingMetric, mongo: Mongo, serverAddresses: List[ServerAddress])
-    extends DBTCPConnector(mongo, serverAddresses) with Loggable {
+class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private val timingMetric: TimingMetric, mongo: Mongo)
+    extends DBTCPConnector(mongo) with Loggable {
 
   override def requestStart = targetConnector.requestStart()
 
@@ -22,8 +22,6 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
   override def close() = targetConnector.close()
 
   override def debugString() = targetConnector.debugString()
-
-  override def fetchMaxBsonObjectSize() = targetConnector.fetchMaxBsonObjectSize()
 
   override def checkMaster(force: Boolean, failIfNoMaster: Boolean) = targetConnector.checkMaster(force, failIfNoMaster)
 
@@ -72,9 +70,13 @@ class TimingDBTCPConnector(private val targetConnector: DBTCPConnector, private 
 
   override def _checkWriteError(db: DB, port: DBPort, concern: WriteConcern) = targetConnector._checkWriteError(db, port, concern)
 
-  override def setMaster(master: Node) {
-    targetConnector.setMaster(master)
-  }
-
   override def getMyPort = targetConnector.getMyPort
+
+  override def initDirectConnection() = targetConnector.initDirectConnection()
+
+  override def setMaster(master: Node) = targetConnector.setMaster(master)
+
+  override def isMongosConnection = targetConnector.isMongosConnection
+
+  override def authenticate(credentials: MongoCredential) = targetConnector.authenticate(credentials)
 }
