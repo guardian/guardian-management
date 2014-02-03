@@ -22,7 +22,7 @@ case class PlainTextResponse(text: String) extends Response {
 
 case class HtmlResponse(html: Elem) extends Response {
   def sendTo(response: HttpResponse) {
-    response.contentType = "application/xhtml+xml"
+    response.contentType = "text/html"
     response.body = Some(HtmlResponseBody(html))
 
     response.send()

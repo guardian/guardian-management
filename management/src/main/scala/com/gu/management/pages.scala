@@ -54,7 +54,7 @@ trait JsonManagementPage extends ManagementPage {
 
 trait HtmlManagementPage extends ManagementPage {
   final def get(request: HttpRequest) = HtmlResponse(
-    <html xmlns="http://www.w3.org/1999/xhtml">
+    <html>
       <head>
         <title>{ applicationName } | { title }</title>
       </head>

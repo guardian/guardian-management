@@ -21,7 +21,18 @@ sealed trait ResponseBody {
   def length: Int = toText.length
 }
 case class TextResponseBody(text: String) extends ResponseBody { lazy val toText = text }
-case class HtmlResponseBody(html: Elem) extends ResponseBody { lazy val toText = html.toString() }
+case class HtmlResponseBody(html: Elem) extends ResponseBody {
+  lazy val toText = {
+    val w = new java.io.StringWriter()
+    xml.XML.write(
+      w,
+      html,
+      "UTF-8",
+      xmlDecl = false,
+      doctype = xml.dtd.DocType("html", xml.dtd.SystemID("about:legacy-compat"), Nil))
+    w.toString
+  }
+}
 case class XmlResponseBody(xml: Elem) extends ResponseBody { lazy val toText = xml.toString() }
 case class JsonResponseBody(json: JValue) extends ResponseBody { lazy val toText = pretty(render(json)) }
 
