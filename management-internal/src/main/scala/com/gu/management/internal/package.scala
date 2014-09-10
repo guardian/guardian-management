@@ -3,6 +3,7 @@ package com.gu.management.internal
 import io.Source
 import com.gu.management._
 import com.sun.net.httpserver.{ HttpServer, HttpsServer, HttpExchange }
+import scala.collection.JavaConversions._
 
 object `package` extends FormParameterParsing {
   implicit def integer2In(integer: Int) = new {
@@ -25,7 +26,7 @@ object `package` extends FormParameterParsing {
 
     lazy val getPostParameters: ListMultiMap[String, String] = {
       if (!(exchange.getRequestMethod equalsIgnoreCase "POST") ||
-        !(exchange.getRequestHeaders.get("Content-Type").contains("application/x-www-form-urlencoded"))) {
+        !exchange.getRequestHeaders.get("Content-Type").exists(_.contains("application/x-www-form-urlencoded"))) {
         Map.empty[String, List[String]]
       } else {
         val postQueryString = Source.fromInputStream(exchange.getRequestBody, "UTF-8").mkString("")
