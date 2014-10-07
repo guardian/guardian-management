@@ -61,7 +61,7 @@ trait PortFileHandling extends Loggable {
       true
     } catch {
       case t: Throwable =>
-        logger.warn("Could not create management port file at " + file, t)
+        logger.warn("Could not create management port file at " + file)
         false
     }
   }
