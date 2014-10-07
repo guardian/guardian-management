@@ -1,7 +1,8 @@
 package com.gu.management
 
 import xml.NodeSeq
-import net.liftweb.json.Extraction
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 trait ManagementPage {
   /**
@@ -45,7 +46,7 @@ trait Postable extends ManagementPage {
 }
 
 trait JsonManagementPage extends ManagementPage {
-  implicit val formats = net.liftweb.json.DefaultFormats
+  implicit val formats = DefaultFormats
 
   def get(request: HttpRequest) = JsonResponse(Extraction.decompose(jsonObj))
 

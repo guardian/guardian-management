@@ -4,6 +4,8 @@ import com.sun.net.httpserver.{ HttpExchange, HttpHandler, HttpServer }
 import com.gu.management._
 import java.net.{ BindException, InetSocketAddress }
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import scalax.file.Path
 
 object ManagementServer extends Loggable with PortFileHandling {
@@ -97,13 +99,15 @@ trait ManagementHandler extends HttpHandler with Loggable {
             }
           } catch {
             case e: Exception =>
-              ErrorResponse(500, "Exception thrown whilst handling internal management page request:\n\n%s\n    %s" format (e.toString, e.getStackTraceString.replace("\n", "\n    ")))
+              val sw = new StringWriter()
+              e.printStackTrace(new PrintWriter(sw))
+              ErrorResponse(500, "Exception thrown whilst handling internal management page request:\n\n%s\n    %s" format (e.toString, sw.toString.replace("\n", "\n    ")))
           }
       }
 
       response to httpResponse
     } catch {
-      case e => {
+      case e: Throwable => {
         logger.error("Caught an exception whilst handling internal management page request", e)
       }
     }

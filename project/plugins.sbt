@@ -4,10 +4,10 @@ resolvers ++= Seq(
   "Web plugin repo" at "http://siasia.github.com/maven2"
 )
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1-RC2")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.4")
 
-addSbtPlugin("com.typesafe.sbtscalariform" % "sbtscalariform" % "0.4.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "0.6")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "0.8.5")
 
-libraryDependencies += "com.github.siasia" %% "xsbt-web-plugin" % "0.12.0-0.2.11.1"
+addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "0.9.0")

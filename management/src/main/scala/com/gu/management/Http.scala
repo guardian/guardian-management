@@ -2,7 +2,8 @@ package com.gu.management
 
 import scala.collection.mutable
 import scala.xml.Elem
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 sealed abstract class Method
 case object GET extends Method

@@ -1,15 +1,14 @@
 
 libraryDependencies ++= Seq(
     "org.slf4j" % "slf4j-api" % "1.6.1",
-    "net.liftweb" %% "lift-json" % "2.5-M4", // Update when poss - 2.5-M4 incorrectly gave specs2 compile scope: https://github.com/lift/framework/issues/1397
-    "org.specs2" %% "specs2" % "1.12.3" % "test",
-    "net.liftweb" %% "lift-testkit" % "2.5-M4" % "test"
+    "org.scala-lang.modules" %% "scala-xml" % "1.0.2",
+    "org.json4s" %% "json4s-jackson" % "3.2.9",
+    "org.specs2" %% "specs2" % "2.4.6" % "test"
 )
 
-// needed for specs2
-resolvers += ScalaToolsSnapshots
-
 resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
+
+resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 // disable publishing the main javadoc jar
 publishArtifact in (Compile, packageDoc) := false

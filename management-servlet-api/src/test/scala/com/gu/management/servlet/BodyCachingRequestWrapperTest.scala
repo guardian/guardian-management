@@ -1,7 +1,6 @@
 package com.gu.management.servlet
 
 import java.io.ByteArrayInputStream
-import net.liftweb.mocks.{ MockHttpServletRequest, MockServletInputStream }
 import java.net.URLEncoder._
 import org.specs2.mutable.Specification
 import scala.collection.JavaConversions._

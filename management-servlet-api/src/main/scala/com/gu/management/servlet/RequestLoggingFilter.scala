@@ -68,7 +68,7 @@ class RequestLoggingFilter(
           case _ => "<<wont display>>"
         }).take(maxRequstBodyLength)
       } catch {
-        case e =>
+        case e: Throwable =>
           logger.trace("Failed to display request body", e)
           "<<binary>>"
       }

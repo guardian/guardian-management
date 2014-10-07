@@ -31,7 +31,7 @@ trait MongoManagement extends Loggable {
       )
       connectorField.setAccessible(false)
     } catch {
-      case ex => logger.error("Failed to wire timing metrics into mongo db", ex)
+      case ex: Throwable => logger.error("Failed to wire timing metrics into mongo db", ex)
     }
   }
 

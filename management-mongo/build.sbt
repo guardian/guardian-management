@@ -1,9 +1,8 @@
-resolvers ++= Seq(Classpaths.typesafeResolver, ScalaToolsReleases)
+resolvers ++= Seq(Classpaths.typesafeResolver)
 
 libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % "0.9.27",
-    "org.mongodb" % "mongo-java-driver" % "2.11.3",
-    "org.mongodb" %% "casbah-core" % "2.6.4"
+    "org.mongodb" %% "casbah-core" % "2.7.3"
 )
 
 // disable publishing the main javadoc jar
