@@ -1,7 +1,7 @@
-import com.typesafe.sbtscalariform.ScalariformPlugin
+import com.typesafe.sbt.SbtScalariform
 import sbt._
 import sbt.Keys._
-import sbt.PlayProject._
+import play.Play.autoImport._
 
 object ManagementBuild extends Build {
 
@@ -33,5 +33,5 @@ object ManagementBuild extends Build {
     managementLogback
   ).noPublish
 
-  def managementProject(name: String) = Project(name, file(name)).settings(ScalariformPlugin.scalariformSettings :_*)
+  def managementProject(name: String) = Project(name, file(name)).settings(SbtScalariform.scalariformSettings :_*)
 }

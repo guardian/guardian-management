@@ -1,7 +1,8 @@
 package com.gu.management
 
-import net.liftweb.json._
 import scala.xml.Elem
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 /**
  * Parent of all (immutable) response objects. Pattern drawn from Lift response wrappers.

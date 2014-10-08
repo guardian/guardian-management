@@ -4,11 +4,10 @@ import com.gu.management._
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.FilterChain
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import net.liftweb.mocks.MockHttpServletRequest
 import com.gu.management.HttpRequest
 
 class FakeManagementPage(override val path: String, val response: Response, override val needsAuth: Boolean) extends ManagementPage {
@@ -17,7 +16,7 @@ class FakeManagementPage(override val path: String, val response: Response, over
   override def get(req: HttpRequest): Response = response
 }
 
-class HttpFilterTest extends FlatSpec with ShouldMatchers with MockitoSugar {
+class HttpFilterTest extends FlatSpec with Matchers with MockitoSugar {
   trait FilterWithPageTest {
     val mockRequest = new MockHttpServletRequest("/foo")
     val mockResponse = mock[Response]
