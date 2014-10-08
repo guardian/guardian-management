@@ -22,10 +22,10 @@ Add the dependency to your build
 In your build.sbt:
 
     resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.21"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.34"
 
-As of 5.7, Scala 2.8.1 and 2.9.0-1 are no longer supported. Upgrade your project
-to Scala 2.9.1.
+As of 5.34, Scala 2.8, 2.9, and 2.10 are no longer supported.
+Upgrade your project to Scala 2.11.2
 
 Add the management filter to your web.xml
 --------------------------------------------
