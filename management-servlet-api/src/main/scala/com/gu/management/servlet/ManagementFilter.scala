@@ -1,8 +1,9 @@
 package com.gu.management.servlet
 
-import com.gu.management.{ ManagementPage, IndexPage, ManagementBuildInfo, Loggable, UserProvider, UserCredentials }
 import javax.servlet._
-import javax.servlet.http.{ HttpServletResponse, HttpServletRequest }
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+
+import com.gu.management.{IndexPage, Loggable, ManagementBuildInfo, ManagementPage, UserCredentials, UserProvider}
 
 trait ManagementFilter extends AbstractHttpFilter with Loggable {
   lazy val version = ManagementBuildInfo.version
@@ -18,12 +19,13 @@ trait ManagementFilter extends AbstractHttpFilter with Loggable {
     pagesWithIndex find {
       _.canDispatch(httpRequest)
     } match {
-      case Some(page) if page.needsAuth => request.getHeaderOption("Authorization") match {
-        case Some(authString) if userProvider.isValid(extractCredentials(authString)) => {
-          page.dispatch(httpRequest).sendTo(httpResponse)
+      case Some(page) if page.needsAuth =>
+        request.getHeaderOption("Authorization") match {
+          case Some(authString) if userProvider.isValid(extractCredentials(authString)) =>
+            page.dispatch(httpRequest).sendTo(httpResponse)
+          case _ =>
+            response.sendNeedsAuthorisation(userProvider.realm)
         }
-        case _ => response.sendNeedsAuthorisation(userProvider.realm)
-      }
       case Some(page) => page.dispatch(httpRequest).sendTo(httpResponse)
       case _ => chain.doFilter(request, response)
     }
@@ -31,10 +33,10 @@ trait ManagementFilter extends AbstractHttpFilter with Loggable {
 
   lazy val pagesWithIndex = IndexPage(pages, applicationName, version) :: pages
 
-  private def extractCredentials(authString: String) = {
+  private def extractCredentials(authString: String): UserCredentials = {
     // authstring consists of "Basic Base64(user:pass)".
     authString.drop(6).base64Decoded.kv(":") match {
-      case (user, pass) => UserCredentials(user, pass)
+      case Some((user, pass)) => UserCredentials(user, pass)
       case _ => UserCredentials.missing
     }
   }
