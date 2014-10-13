@@ -7,18 +7,20 @@ import scalax.io.Resource
 object `package` {
 
   implicit def string2SplitAtFirst(s: String) = new {
-    def splitAtFirst(regex: String): (String, String) = s.split(regex) match {
-      case Array(_) => (s -> "")
-      case Array(prefix, rest) => (prefix -> rest)
+    def splitAtFirst(regex: String): Option[(String, String)] = s.split(regex) match {
+      case Array() => None
+      case Array(_) => Some(s -> "")
+      case Array(prefix, rest) => Some(prefix -> rest)
       case splits =>
-        splits(0) -> s.replaceFirst(splits(0), "").replaceFirst(regex, "")
+        Some(splits(0) -> s.replaceFirst(splits(0), "").replaceFirst(regex, ""))
     }
   }
 
   implicit def string2kv(s: String) = new {
-    def kv(delimiter: String): (String, String) = {
-      val (k, v) = s.splitAtFirst(delimiter)
-      k.trim -> v.trim
+    def kv(delimiter: String): Option[(String, String)] = {
+      for {
+        (k, v) <- s.splitAtFirst(delimiter)
+      } yield k.trim -> v.trim
     }
   }
 
