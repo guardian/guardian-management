@@ -9,13 +9,11 @@ import java.io.StringWriter
 import scalax.file.Path
 
 object ManagementServer extends Loggable with PortFileHandling {
-  val managementPort = 18080
-  val managementLimit = 18099
-  val permittedPorts = managementPort to managementLimit
+  val permittedPorts = 18080 to 18099
   private var server: Option[HttpServer] = None
 
   def start(handler: ManagementHandler) {
-    startServer(managementPort, handler)
+    startServer(permittedPorts.min, handler)
   }
 
   def isRunning(): Boolean = server.isDefined
