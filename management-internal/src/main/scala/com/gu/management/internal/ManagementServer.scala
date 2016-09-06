@@ -16,8 +16,8 @@ object ManagementServer extends Loggable with PortFileHandling {
     startServer(permittedPorts.min, handler)
   }
 
-  def isRunning(): Boolean = server.isDefined
-  def port(): Int = server.get.getAddress.getPort
+  def isRunning: Boolean = server.isDefined
+  def port: Int = server.get.getAddress.getPort
 
   private def startServer(port: Int, handler: ManagementHandler) {
     synchronized {

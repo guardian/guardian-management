@@ -25,11 +25,11 @@ class TestManagementServer extends Specification {
   "management server" should {
     "bind to free port" in {
       ManagementServer.isRunning must beTrue
-      ManagementServer.port() must be greaterThanOrEqualTo (18080)
-      ManagementServer.port() must be lessThanOrEqualTo (18099)
+      ManagementServer.port must be greaterThanOrEqualTo (18080)
+      ManagementServer.port must be lessThanOrEqualTo (18099)
     }
     "serve a management page" in {
-      val port = ManagementServer.port()
+      val port = ManagementServer.port
       val response = Source.fromURL("http://localhost:%d/management/test" format port) mkString ""
       response must be equalTo ("response")
     }
