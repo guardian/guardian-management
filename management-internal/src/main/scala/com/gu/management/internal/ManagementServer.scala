@@ -12,31 +12,40 @@ object ManagementServer extends Loggable with PortFileHandling {
   val permittedPorts = 18080 to 18099
   private var server: Option[HttpServer] = None
 
-  def start(handler: ManagementHandler) {
-    startServer(permittedPorts.min, handler)
+  def start(handler: ManagementHandler): Boolean = {
+    permittedPorts.takeWhile(!start(handler, _))
+    isRunning
+  }
+
+  def start(handler: ManagementHandler, port: Int): Boolean = {
+    startServer(port, handler)
+      .fold(err => { logger.warn(err); false }, ok => { logger.info(ok); true })
   }
 
   def isRunning: Boolean = server.isDefined
   def port: Int = server.get.getAddress.getPort
 
-  private def startServer(port: Int, handler: ManagementHandler) {
+  private def startServer(bindToPort: Int, handler: ManagementHandler): Either[String, String] = {
+    def launchServer() = {
+      val srv = HttpServer.create(new InetSocketAddress(bindToPort), 10)
+      srv.createContext("/", handler)
+      srv.setExecutor(null)
+      srv.start()
+      srv
+    }
+
     synchronized {
-      if (server.isEmpty && (port in permittedPorts)) {
+      if (server.nonEmpty) {
+        Left(s"Server already started. Running on port $port")
+      } else {
         try {
-          val newServer = HttpServer.create(new InetSocketAddress(port), 10)
-          newServer.createContext("/", handler)
-          newServer.setExecutor(null)
-          newServer.start()
+          val newServer = launchServer()
           createPortFile(handler.applicationName, newServer.getAddress.getPort)
           server = Some(newServer)
+          Right(s"Server started on port $bindToPort")
         } catch {
-          case e: BindException => {
-            logger.info("Port %d in use. Retrying with next port." format port)
-            startServer(port + 1, handler)
-          }
+          case e: BindException => Left(s"Port $bindToPort in use.")
         }
-      } else {
-        logger.warn("Cannot listen on any of the permitted ports. Management server not started.")
       }
     }
   }
