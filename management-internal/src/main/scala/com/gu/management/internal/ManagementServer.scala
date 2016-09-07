@@ -36,15 +36,15 @@ object ManagementServer extends Loggable with PortFileHandling {
 
     synchronized {
       if (server.nonEmpty) {
-        Left(s"Server already started. Running on port $port")
+        Left(s"Management server already started. Running on port $port")
       } else {
         try {
           val newServer = launchServer()
           createPortFile(handler.applicationName, newServer.getAddress.getPort)
           server = Some(newServer)
-          Right(s"Server started on port $bindToPort")
+          Right(s"Management server started on port $bindToPort")
         } catch {
-          case e: BindException => Left(s"Port $bindToPort in use.")
+          case e: BindException => Left(s"Cannot bind port $bindToPort. Already in use.")
         }
       }
     }
