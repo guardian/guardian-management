@@ -12,15 +12,17 @@ object ManagementServer extends Loggable with PortFileHandling {
   val permittedPorts = 18080 to 18099
   private var server: Option[HttpServer] = None
 
-  def start(handler: ManagementHandler): Boolean = {
-    permittedPorts.takeWhile(!start(handler, _))
-    isRunning
-  }
+  def start(handler: ManagementHandler): Boolean =
+    withServerStopped(ifRunning = false) {
+      permittedPorts.takeWhile(!start(handler, _))
+      isRunning
+    }
 
-  def start(handler: ManagementHandler, port: Int): Boolean = {
-    startServer(port, handler)
-      .fold(err => { logger.warn(err); false }, ok => { logger.info(ok); true })
-  }
+  def start(handler: ManagementHandler, port: Int): Boolean =
+    withServerStopped(ifRunning = false) {
+      startServer(port, handler)
+        .fold(err => { logger.warn(err); false }, ok => { logger.info(ok); true })
+    }
 
   def isRunning: Boolean = server.isDefined
   def port: Int = server.get.getAddress.getPort
@@ -35,9 +37,7 @@ object ManagementServer extends Loggable with PortFileHandling {
     }
 
     synchronized {
-      if (server.nonEmpty) {
-        Left(s"Management server already started. Running on port $port")
-      } else {
+      withServerStopped[Either[String, String]](ifRunning = (msg: String) => Left(msg)) {
         try {
           val newServer = launchServer()
           createPortFile(handler.applicationName, newServer.getAddress.getPort)
@@ -55,6 +55,19 @@ object ManagementServer extends Loggable with PortFileHandling {
       server.foreach { _.stop(0) }
       server = None
       deletePortFile()
+    }
+  }
+
+  private def withServerStopped[T](ifRunning: T)(block: => T): T =
+    withServerStopped[T]((_: String) => ifRunning)(block)
+
+  private def withServerStopped[T](ifRunning: String => T)(block: => T): T = {
+    if (isRunning) {
+      val msg = s"Management server already started. Running on port $port"
+      logger.warn(msg)
+      ifRunning(msg)
+    } else {
+      block
     }
   }
 }
