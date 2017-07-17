@@ -9,14 +9,11 @@ object ManagementBuild extends Build {
     lazy val noPublish : sbt.Project = project.settings(publish := false)
   }
 
-
-
   lazy val root = Project("management-root", file(".")).aggregate(
     management,
     managementServletApi,
     managementInternal,
     managementLogback,
-    managementMongo,
     exampleServletApi
   ).noPublish
 
@@ -25,7 +22,6 @@ object ManagementBuild extends Build {
   lazy val managementServletApi = managementProject("management-servlet-api") dependsOn (management)
   lazy val managementInternal = managementProject("management-internal") dependsOn (management)
   lazy val managementLogback = managementProject("management-logback") dependsOn (management)
-  lazy val managementMongo = managementProject("management-mongo") dependsOn  (management)
 
   lazy val exampleServletApi = managementProject("example-servlet-api").dependsOn(
     management,
