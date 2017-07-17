@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.FilterChain
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.gu.management.HttpRequest
