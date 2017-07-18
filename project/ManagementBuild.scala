@@ -1,7 +1,6 @@
 import com.typesafe.sbt.SbtScalariform
 import sbt._
 import sbt.Keys._
-import play.Play.autoImport._
 
 object ManagementBuild extends Build {
 
