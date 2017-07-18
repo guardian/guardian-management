@@ -9,7 +9,4 @@ libraryDependencies ++= Seq(
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
-// disable publishing the main javadoc jar
-publishArtifact in (Compile, packageDoc) := false
-
-seq(scalariformSettings: _*)
+scalariformSettings

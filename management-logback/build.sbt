@@ -5,7 +5,4 @@ libraryDependencies ++= Seq(
     "javax.servlet" % "servlet-api" % "2.4" % "provided"
 )
 
-// disable publishing the main javadoc jar
-publishArtifact in (Compile, packageDoc) := false
-
-seq(scalariformSettings: _*)
+scalariformSettings
