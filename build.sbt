@@ -1,33 +1,48 @@
-import java.util.jar._
-
 organization in ThisBuild := "com.gu"
 
 scalaVersion in ThisBuild := "2.12.2"
 
 crossScalaVersions in ThisBuild := Seq("2.12.2", "2.11.9")
 
-releaseSettings
+scalacOptions in ThisBuild += "-deprecation"
 
 publishArtifact := false
 
-packageOptions in ThisBuild <+= (version, name) map { (v, n) =>
-  Package.ManifestAttributes(
-    Attributes.Name.IMPLEMENTATION_VERSION -> v,
-    Attributes.Name.IMPLEMENTATION_TITLE -> n,
-    Attributes.Name.IMPLEMENTATION_VENDOR -> "guardian.co.uk"
-  )
+homepage in ThisBuild := Some(url("https://github.com/guardian/guardian-management/"))
+licenses in ThisBuild := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+publishMavenStyle in ThisBuild := true
+publishArtifact in Test in ThisBuild := false
+scmInfo in ThisBuild := Some(ScmInfo(
+  url("https://github.com/guardian/guardian-management"),
+  "scm:git:git@github.com:guardian/guardian-management.git"
+))
+
+pomExtra in ThisBuild := {
+  <developers>
+    <developer>
+      <id>philwills</id>
+      <name>Phil Wills</name>
+      <url>https://github.com/philwills</url>
+    </developer>
+  </developers>
 }
 
-publishTo in ThisBuild <<= (version) { version: String =>
-    val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"
-    Some(
-        Resolver.file(
-            "guardian github " + publishType,
-            file(System.getProperty("user.home") + "/guardian.github.com/maven/repo-" + publishType)
-        )
-    )
-}
+import ReleaseTransformations._
 
+releaseCrossBuild in ThisBuild := true
 
-scalacOptions in ThisBuild += "-deprecation"
+releaseProcess in ThisBuild := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+  setNextVersion,
+  commitNextVersion,
+  ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+  pushChanges
+)
 
