@@ -2,7 +2,10 @@ package com.gu.management.servlet
 
 import java.io.ByteArrayInputStream
 import java.net.URLEncoder._
+import java.nio.charset.Charset
+
 import org.specs2.mutable.Specification
+
 import scala.collection.JavaConversions._
 
 class BodyCachingRequestWrapperTest extends Specification {
@@ -94,11 +97,12 @@ class BodyCachingRequestWrapperTest extends Specification {
 
   def createWrapperForBodyString(requestBody: String) = {
     BodyCachingRequestWrapper(new MockHttpServletRequest("/foo") {
-      override def getInputStream = new MockServletInputStream(new ByteArrayInputStream(requestBody.getBytes("UTF-8")))
+      override def getInputStream = new MockServletInputStream(new ByteArrayInputStream(requestBody.getBytes(utf8)))
 
       charEncoding = "UTF-8"
       contentType = "application/x-www-form-urlencoded"
     });
   }
 
+  val utf8 = Charset.forName("UTF-8")
 }

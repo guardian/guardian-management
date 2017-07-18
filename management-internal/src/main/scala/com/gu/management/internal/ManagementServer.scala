@@ -6,7 +6,9 @@ import java.net.{ BindException, InetSocketAddress }
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import scalax.file.Path
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.util
 
 object ManagementServer extends Loggable with PortFileHandling {
   val managementPort = 18080
@@ -58,7 +60,7 @@ trait PortFileHandling extends Loggable {
   def createPortFile(appName: String, port: Int): Boolean = {
     val file = new File(portFileRoot + appName + ".port")
     try {
-      Path(file).write(port.toString)
+      Files.write(file.toPath, util.Arrays.asList(port.toString), Charset.defaultCharset())
       portFile = Some(file)
       true
     } catch {
@@ -68,7 +70,7 @@ trait PortFileHandling extends Loggable {
     }
   }
   def deletePortFile() {
-    portFile.foreach(Path(_).delete())
+    portFile.foreach(f => Files.delete(f.toPath))
     portFile = None
   }
 }

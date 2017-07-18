@@ -2,7 +2,6 @@ package com.gu.management.servlet
 
 import javax.servlet.http.{ HttpServletResponse, HttpServletRequest }
 import scala.collection.JavaConversions._
-import scalax.io.Resource
 
 object `package` {
 
@@ -63,6 +62,16 @@ object `package` {
   }
 
   implicit def httpServletRequest2GetBody(request: HttpServletRequest) = new {
-    def getBody(): Array[Byte] = Resource.fromInputStream(request.getInputStream).bytes.toArray
+    def getBody(): Array[Byte] = {
+      val is = request.getInputStream
+      try {
+        Stream.continually(is.read)
+          .takeWhile(_ != -1)
+          .map(_.toByte)
+          .toArray
+      } finally {
+        is.close()
+      }
+    }
   }
 }

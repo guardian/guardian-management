@@ -1,9 +1,9 @@
 package com.gu.management.servlet
 
 import javax.servlet._
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import javax.servlet.http.{ HttpServletRequest, HttpServletResponse }
 
-import com.gu.management.{IndexPage, Loggable, ManagementBuildInfo, ManagementPage, UserCredentials, UserProvider}
+import com.gu.management.{ IndexPage, Loggable, ManagementBuildInfo, ManagementPage, UserCredentials, UserProvider }
 
 trait ManagementFilter extends AbstractHttpFilter with Loggable {
   lazy val version = ManagementBuildInfo.version
