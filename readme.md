@@ -1,6 +1,8 @@
 Guardian Management
 ===================
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gu/management_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/management_2.12)
+
 In order to simplify their management, Guardian web-apps should conform to our [web applications specification]
 (https://docs.google.com/document/d/12ckZC0fGtilntcsJy6mBUylvohLoxUKjkwGDaur-pE8/edit). 
 This library provides standard management pages and makes it easy to create new 
@@ -21,11 +23,9 @@ Add the dependency to your build
 
 In your build.sbt:
 
-    resolvers += "Guardian Github Snapshots" at "http://guardian.github.com/maven/repo-releases"
-    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.35"
+    libraryDependencies += "com.gu" %% "management-servlet-api" % "5.37"
 
-As of 5.34, Scala 2.8, 2.9, and 2.10 are no longer supported.
-Upgrade your project to Scala 2.11.2
+It's published for Scala `2.11` and `2.12` to maven-central.
 
 Add the management filter to your web.xml
 --------------------------------------------
