@@ -29,9 +29,9 @@ pomExtra in ThisBuild := {
 
 import ReleaseTransformations._
 
-releaseCrossBuild in ThisBuild := true
+releaseCrossBuild := true
 
-releaseProcess in ThisBuild := Seq[ReleaseStep](
+releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
