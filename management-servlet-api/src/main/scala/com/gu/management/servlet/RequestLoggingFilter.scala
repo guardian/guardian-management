@@ -82,7 +82,7 @@ class RequestLoggingFilter(
   def doHttpFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
     // We don't want to use the BodyCaching wrapper on multipart file uploads, as this calls request.getBody, which exhausts the request
     // and breaks calls to fileParams in scalatra
-    val isMultiPartUpload = request.getContentType.startsWith("multipart/")
+    val isMultiPartUpload = Option(request.getContentType).exists(_.startsWith("multipart/"))
     val logPostData = logRequestBodySwitch.isSwitchedOn && List("POST", "PUT").contains(request.getMethod) && !isMultiPartUpload
     val wrappedRequest = if (logPostData) BodyCachingRequestWrapper(request) else request
 
