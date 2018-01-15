@@ -6,9 +6,10 @@ import javax.servlet.ServletInputStream
 import javax.servlet.http.{ HttpServletRequest, HttpServletRequestWrapper }
 import scala.collection.JavaConversions._
 
-class BodyCachingRequestWrapper(val request: HttpServletRequest) extends HttpServletRequestWrapper(request)
-    //class BodyCachingRequestWrapper(private val request: HttpServletRequest) extends HttpServletRequestWrapper(request)
+class BodyCachingRequestWrapper(val request: HttpServletRequest)
+    extends HttpServletRequestWrapper(request)
     with FormParameterParsing {
+
   val body = request.getBody()
   lazy val encoding = request.getCharacterEncodingOption() getOrElse "UTF-8"
 
@@ -17,7 +18,7 @@ class BodyCachingRequestWrapper(val request: HttpServletRequest) extends HttpSer
   // body caching wrappers up stream
   lazy val params: ListMultiMap[String, String] = formParams addBindings request.parameters
 
-  lazy val isForm: Boolean = request.getContentType() startsWith ("application/x-www-form-urlencoded")
+  lazy val isForm: Boolean = Option(request.getContentType).exists(_.startsWith("application/x-www-form-urlencoded"))
 
   lazy val formParams: Map[String, List[String]] = isForm match {
     case true => getParametersFrom(new String(body, encoding), encoding)
