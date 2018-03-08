@@ -11,36 +11,43 @@ import java.nio.file.Files
 import java.util
 
 object ManagementServer extends Loggable with PortFileHandling {
-  val managementPort = 18080
-  val managementLimit = 18099
-  val permittedPorts = managementPort to managementLimit
+  val permittedPorts = 18080 to 18099
   private var server: Option[HttpServer] = None
 
-  def start(handler: ManagementHandler) {
-    startServer(managementPort, handler)
-  }
+  def start(handler: ManagementHandler): Boolean =
+    withServerStopped(ifRunning = false) {
+      permittedPorts.takeWhile(!start(handler, _))
+      isRunning
+    }
 
-  def isRunning(): Boolean = server.isDefined
-  def port(): Int = server.get.getAddress.getPort
+  def start(handler: ManagementHandler, port: Int): Boolean =
+    withServerStopped(ifRunning = false) {
+      startServer(port, handler)
+        .fold(err => { logger.warn(err); false }, ok => { logger.info(ok); true })
+    }
 
-  private def startServer(port: Int, handler: ManagementHandler) {
+  def isRunning: Boolean = server.isDefined
+  def port: Int = server.get.getAddress.getPort
+
+  private def startServer(bindToPort: Int, handler: ManagementHandler): Either[String, String] = {
+    def launchServer() = {
+      val srv = HttpServer.create(new InetSocketAddress(bindToPort), 10)
+      srv.createContext("/", handler)
+      srv.setExecutor(null)
+      srv.start()
+      srv
+    }
+
     synchronized {
-      if (server.isEmpty && (port in permittedPorts)) {
+      withServerStopped[Either[String, String]](ifRunning = (msg: String) => Left(msg)) {
         try {
-          val newServer = HttpServer.create(new InetSocketAddress(port), 10)
-          newServer.createContext("/", handler)
-          newServer.setExecutor(null)
-          newServer.start()
+          val newServer = launchServer()
           createPortFile(handler.applicationName, newServer.getAddress.getPort)
           server = Some(newServer)
+          Right(s"Management server started on port $bindToPort")
         } catch {
-          case e: BindException => {
-            logger.info("Port %d in use. Retrying with next port." format port)
-            startServer(port + 1, handler)
-          }
+          case e: BindException => Left(s"Cannot bind port $bindToPort. Already in use.")
         }
-      } else {
-        logger.warn("Cannot listen on any of the permitted ports. Management server not started.")
       }
     }
   }
@@ -50,6 +57,19 @@ object ManagementServer extends Loggable with PortFileHandling {
       server.foreach { _.stop(0) }
       server = None
       deletePortFile()
+    }
+  }
+
+  private def withServerStopped[T](ifRunning: T)(block: => T): T =
+    withServerStopped[T]((_: String) => ifRunning)(block)
+
+  private def withServerStopped[T](ifRunning: String => T)(block: => T): T = {
+    if (isRunning) {
+      val msg = s"Management server already started. Running on port $port"
+      logger.warn(msg)
+      ifRunning(msg)
+    } else {
+      block
     }
   }
 }
